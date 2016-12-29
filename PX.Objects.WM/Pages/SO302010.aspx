@@ -30,24 +30,10 @@
 	        }
 	    }
 
-	    function Quantity_KeyDown(ctrl, e) {
-	        if (e.keyCode === 13) { //Enter key
-	            //This is used to allow scanning quantity and returning focus back to barcode field. 
-	            //(TAB key can also be included in scan as Code128a to allow moving from barcode to quantity)
-	            px_alls["edBarcode"].focus();
-	            e.cancel = true;
-	        }
-	    }
-
 	    function Barcode_KeyDown(ctrl, e) {
 	        if (e.keyCode === 13) { //Enter key
 	            var ds = px_alls["ds"];
 	            ds.executeCallback("Scan");
-	            e.cancel = true;
-	        }
-	        else if (e.keyCode == 120) { //F9 key -- also works with barcode 
-	            var ds = px_alls["ds"];
-	            ds.executeCallback("Confirm");
 	            e.cancel = true;
 	        }
 	    }
@@ -65,16 +51,30 @@
 	<px:PXFormView ID="form" runat="server" DataSourceID="ds" Height="63px" Width="100%" Visible="true" DataMember="Document" DefaultControlID="edShipmentNbr">
         <Template>
             <px:PXLayoutRule runat="server" StartColumn="True" LabelsWidth="S" ControlSize="L" />
-			<px:PXSelector ID="edShipmentNbr" runat="server" DataField="ShipmentNbr" AutoRefresh="true" CommitChanges="true" />
+			<px:PXSelector ID="edShipmentNbr" runat="server" DataField="ShipmentNbr" AutoRefresh="true" AllowEdit="true" CommitChanges="true" />
             <px:PXTextEdit ID="edBarcode" runat="server" DataField="Barcode">
                 <ClientEvents KeyDown="Barcode_KeyDown" />
             </px:PXTextEdit>
-            <px:PXLayoutRule runat="server" StartColumn="True" LabelsWidth="S" ControlSize="XXL" />
+            
+            <px:PXCheckBox ID="edLotSerialSearch" runat="server" DataField="LotSerialSearch" />
+            <px:PXLayoutRule runat="server" StartColumn="True" LabelsWidth="S" ControlSize="L" ColumnWidth="M" />
+            <px:PXLayoutRule runat="server" ColumnSpan="2" />
             <px:PXTextEdit ID="edMessage" runat="server" DataField="Message" SuppressLabel="true" />
+            <px:PXNumberEdit ID="edQuantity" runat="server" DataField="Quantity" />
+            <px:PXLayoutRule runat="server" StartColumn="True" LabelsWidth="S" ControlSize="M" />
+            <px:PXGroupBox ID="gbMode" runat="server" Caption="Scan Mode" DataField="ScanMode" RenderSimple="True" RenderStyle="Simple">
+                <Template>
+                    <px:PXRadioButton ID="rbAdd" runat="server" GroupName="gbMode"
+                        Text="Add" Value="A" />
+                    <px:PXRadioButton ID="rbRemove" runat="server" GroupName="gbMode"
+                        Text="Remove" Value="R" />
+                </Template>
+                <ContentLayout Layout="Stack" Orientation="Horizontal" />
+            </px:PXGroupBox>
+           
+            <%--Always hidden, used by JavaScript to decide which sound to play--%>
+            <px:PXLayoutRule runat="server" StartColumn="True" LabelsWidth="S" />
             <px:PXTextEdit ID="edStatus" runat="server" DataField="Status" SuppressLabel="true" />
-            <px:PXNumberEdit ID="edQuantity" runat="server" DataField="Quantity" >
-                   <ClientEvents KeyDown="Quantity_KeyDown" />
-            </px:PXNumberEdit>
         </Template>
     </px:PXFormView>
 </asp:content>

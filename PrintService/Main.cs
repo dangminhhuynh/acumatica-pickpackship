@@ -188,7 +188,7 @@ namespace PrintService
 
         private void ProcessJob(PrintQueue queue, string jobID, string reportID, Dictionary<string, string> parameters)
         {
-            WriteToLog("Processing print job {0}...", jobID);
+            WriteToLog("Queue {0} - processing print job {0}...", queue.QueueName, jobID);
             byte[] pdfReport = null;
             if (reportID == String.Empty)
             {
