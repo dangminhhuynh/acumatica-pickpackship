@@ -45,7 +45,8 @@ namespace PX.Objects.SO
             LeftJoinSingleTable<Customer, On<SOShipment.customerID, Equal<Customer.bAccountID>>>>,
             Where2<Match<INSite, Current<AccessInfo.userName>>,
             And<Where2<Where<Customer.bAccountID, IsNull, Or<Match<Customer, Current<AccessInfo.userName>>>>,
-            And<SOShipment.status, Equal<SOShipmentStatus.open>>>>>,
+            And<SOShipment.status, Equal<SOShipmentStatus.open>,
+            And<SOShipment.shipmentType, Equal<SOShipmentType.issue>>>>>>,
             OrderBy<Desc<SOShipment.shipmentNbr>>>))]
         public virtual string ShipmentNbr { get; set; }
 
@@ -75,11 +76,15 @@ namespace PX.Objects.SO
 
         public abstract class currentInventoryID : IBqlField { }
         [StockItem]
-        public virtual int? CurrentInventoryID { get; set; } //User for lot/serial selection
+        public virtual int? CurrentInventoryID { get; set; }
 
         public abstract class currentSubID : IBqlField { }
         [SubItem]
-        public virtual int? CurrentSubID { get; set; } //User for lot/serial selection
+        public virtual int? CurrentSubID { get; set; }
+
+        public abstract class currentLocationID : IBqlField { }
+        [Location]
+        public virtual int? CurrentLocationID { get; set; }
 
         public abstract class status : IBqlField { }
         [PXString(3, IsUnicode = true)]
@@ -97,6 +102,7 @@ namespace PX.Objects.SO
         public PXSetup<INSetup> Setup;
         public PXCancel<PickPackInfo> Cancel;
         public PXFilter<PickPackInfo> Document;
+        public PXSelect<SOShipment, Where<SOShipment.shipmentNbr, Equal<Current<PickPackInfo.shipmentNbr>>>> Shipment;
         public PXSelect<SOShipLinePick, Where<SOShipLinePick.shipmentNbr, Equal<Current<PickPackInfo.shipmentNbr>>>, OrderBy<Asc<SOShipLinePick.shipmentNbr, Asc<SOShipLine.lineNbr>>>> Transactions;
         public PXSelect<SOShipLineSplit, Where<SOShipLineSplit.shipmentNbr, Equal<Current<SOShipLinePick.shipmentNbr>>, And<SOShipLineSplit.lineNbr, Equal<Current<SOShipLinePick.lineNbr>>>>> Splits;
 
@@ -114,8 +120,18 @@ namespace PX.Objects.SO
             var doc = e.Row as PickPackInfo;
             if (doc == null) return;
 
-            doc.Status = ScanStatuses.Scan;
-            doc.Message = String.Format("Shipment '{0}' loaded and ready to pick.", doc.ShipmentNbr);
+            this.Shipment.Current = this.Shipment.Select();
+            if (this.Shipment.Current != null)
+            {
+                doc.Status = ScanStatuses.Scan;
+                doc.Message = String.Format("Shipment '{0}' loaded and ready to pick.", doc.ShipmentNbr);
+            }
+            else
+            {
+                doc.Status = ScanStatuses.Error;
+                doc.Message = String.Format("Shipment '{0}' not found.", doc.ShipmentNbr);
+            }
+
             this.Document.Update(doc);
         }
 
@@ -238,6 +254,7 @@ namespace PX.Objects.SO
             this.Document.Current.ShipmentNbr = null;
             this.Document.Current.CurrentInventoryID = null;
             this.Document.Current.CurrentSubID = null;
+            this.Document.Current.CurrentLocationID = null;
             this.Transactions.Cache.Clear();
             this.Splits.Cache.Clear();
         }
@@ -245,10 +262,15 @@ namespace PX.Objects.SO
         protected virtual void ProcessBarcode(string barcode)
         {
             var doc = this.Document.Current;
+
             if (doc.LotSerialSearch == true)
             {
-                //TODO: Implement lot/serial search mode
-                throw new NotImplementedException();
+                if (!SetCurrentInventoryIDForLotSerial(barcode))
+                {
+                    doc.Status = ScanStatuses.Error;
+                    doc.Message = String.Format("Lot/serial '{0}' not found in database.", barcode);
+                    return;
+                }
             }
 
             if (doc.CurrentInventoryID == null)
@@ -256,7 +278,7 @@ namespace PX.Objects.SO
                 ProcessItemBarcode(barcode);
             }
             else
-            { 
+            {
                 ProcessLotSerialBarcode(barcode);
             }
         }
@@ -330,7 +352,7 @@ namespace PX.Objects.SO
             }
         }
 
-        private void ProcessLotSerialBarcode(string barcode)
+        protected virtual void ProcessLotSerialBarcode(string barcode)
         {
             var doc = this.Document.Current;
             var inventoryItem = (InventoryItem)PXSelectorAttribute.Select<PickPackInfo.currentInventoryID>(Document.Cache, Document.Current);
@@ -367,6 +389,40 @@ namespace PX.Objects.SO
 
             doc.CurrentInventoryID = null;
             doc.CurrentSubID = null;
+            doc.CurrentLocationID = null;
+        }
+
+        protected virtual bool SetCurrentInventoryIDForLotSerial(string barcode)
+        {
+            var doc = this.Document.Current;
+            INLotSerialStatus firstMatch = null;
+
+            foreach(INLotSerialStatus ls in PXSelect<INLotSerialStatus, 
+                Where<INLotSerialStatus.qtyOnHand, Greater<Zero>, 
+                And<INLotSerialStatus.siteID, Equal<Current<SOShipment.siteID>>,
+                And<INLotSerialStatus.lotSerialNbr, Equal<Required<INLotSerialStatus.lotSerialNbr>>>>>>.Select(this, barcode))
+            {
+                if(firstMatch == null)
+                {
+                    firstMatch = ls;
+                }
+                else
+                {
+                    throw new PXException("More than one lot/serial entry was found. This is not yet supported.");
+                }
+            }
+
+            if(firstMatch != null)
+            {
+                doc.CurrentInventoryID = firstMatch.InventoryID;
+                doc.CurrentSubID = firstMatch.SubItemID;
+                doc.CurrentLocationID = firstMatch.LocationID;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         protected virtual bool AddPick(int? inventoryID, int? subID, decimal? quantity, string lotSerialNumber)
@@ -417,7 +473,7 @@ namespace PX.Objects.SO
             {
                 var split = (SOShipLineSplit)this.Splits.Cache.CreateInstance();
                 split.Qty = 1;
-                split.LocationID = this.Transactions.Current.LocationID;
+                split.LocationID = this.Document.Current.CurrentLocationID;
                 split.LotSerialNbr = lotSerial;
                 this.Splits.Insert(split);
             }
