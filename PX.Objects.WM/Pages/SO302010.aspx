@@ -44,6 +44,7 @@
 		<CallbackCommands>
 			<px:PXDSCallbackCommand Name="Confirm" Visible="True" CommitChanges="True" />
             <px:PXDSCallbackCommand Name="Scan" Visible="False" CommitChanges="True" />
+            <px:PXDSCallbackCommand Name="Allocations" Visible="False" CommitChanges="true" DependOnGrid="grid" />
 		</CallbackCommands>
 	</px:PXDataSource>
 </asp:content>
@@ -110,6 +111,65 @@
                 </Columns>
             </px:PXGridLevel>
         </Levels>
+        <ActionBar>
+            <CustomItems>
+                <px:PXToolBarButton Text="Allocations" Key="cmdLS" CommandName="Allocations" CommandSourceID="ds" DependOnGrid="grid" />
+            </CustomItems>
+        </ActionBar>
         <AutoSize Container="Window" Enabled="True" MinHeight="400" />
     </px:PXGrid>
+    <%-- Bin/Lot/Serial Numbers --%>
+    <px:PXSmartPanel ID="PanelLS" runat="server" Style="z-index: 108; left: 252px; position: absolute; top: 531px; height: 360px;" Width="764px" Caption="Allocations" CaptionVisible="True"
+        Key="Splits" AutoCallBack-Command="Refresh" AutoCallBack-Enabled="True" AutoCallBack-Target="grid2">
+        <px:PXGrid ID="grid2" runat="server" Width="100%" AutoAdjustColumns="True" DataSourceID="ds" Style="border-width: 1px 0px; left: 0px; top: 0px; height: 192px;" SyncPosition="true">
+            <AutoSize Enabled="true" />
+            <Mode InitNewRow="True" />
+            <Parameters>
+                <px:PXSyncGridParam ControlID="grid" />
+            </Parameters>
+            <Levels>
+                <px:PXGridLevel DataMember="splits">
+                    <Columns>
+                        <px:PXGridColumn DataField="InventoryID" Width="108px" />
+                        <px:PXGridColumn DataField="SubItemID" Width="108px" />
+                        <px:PXGridColumn DataField="LocationID" AllowShowHide="Server" Width="108px" CommitChanges="true" />
+                        <px:PXGridColumn DataField="LotSerialNbr" AllowShowHide="Server" Width="108px" CommitChanges="true" />
+                        <px:PXGridColumn DataField="Qty" Width="108px" TextAlign="Right" />
+                        <px:PXGridColumn DataField="UOM" Width="108px" />
+                        <px:PXGridColumn DataField="ExpireDate" AllowShowHide="Server" Width="90px" />
+                        <px:PXGridColumn AllowUpdate="False" DataField="InventoryID_InventoryItem_descr" Width="108px" />
+                    </Columns>
+                    <RowTemplate>
+                        <px:PXLayoutRule runat="server" StartColumn="True" LabelsWidth="M" ControlSize="XM" />
+                        <px:PXSegmentMask ID="edSubItemID2" runat="server" DataField="SubItemID" AutoRefresh="true" />
+                        <px:PXSegmentMask ID="edLocationID2" runat="server" DataField="LocationID" AutoRefresh="true">
+                            <Parameters>
+                                <px:PXControlParam ControlID="grid2" Name="SOShipLineSplit.siteID" PropertyName="DataValues[&quot;SiteID&quot;]" Type="String" />
+                                <px:PXControlParam ControlID="grid2" Name="SOShipLineSplit.inventoryID" PropertyName="DataValues[&quot;InventoryID&quot;]" Type="String" />
+                                <px:PXControlParam ControlID="grid2" Name="SOShipLineSplit.subItemID" PropertyName="DataValues[&quot;SubItemID&quot;]" Type="String" />
+                            </Parameters>
+                        </px:PXSegmentMask>
+                        <px:PXNumberEdit ID="edQty2" runat="server" DataField="Qty" />
+                        <px:PXSelector ID="edUOM2" runat="server" DataField="UOM" AutoRefresh="true">
+                            <Parameters>
+                                <px:PXControlParam ControlID="grid" Name="SOShipLine.inventoryID" PropertyName="DataValues[&quot;InventoryID&quot;]" Type="String" />
+                            </Parameters>
+                        </px:PXSelector>
+                        <px:PXSelector ID="edLotSerialNbr2" runat="server" DataField="LotSerialNbr" AutoRefresh="true">
+                            <Parameters>
+                                <px:PXControlParam ControlID="grid2" Name="SOShipLineSplit.inventoryID" PropertyName="DataValues[&quot;InventoryID&quot;]" Type="String" />
+                                <px:PXControlParam ControlID="grid2" Name="SOShipLineSplit.subItemID" PropertyName="DataValues[&quot;SubItemID&quot;]" Type="String" />
+                                <px:PXControlParam ControlID="grid2" Name="SOShipLineSplit.locationID" PropertyName="DataValues[&quot;LocationID&quot;]" Type="String" />
+                            </Parameters>
+                        </px:PXSelector>
+                        <px:PXDateTimeEdit ID="edExpireDate2" runat="server" DataField="ExpireDate" />
+                    </RowTemplate>
+                    <Layout ColumnsMenu="False" />
+                </px:PXGridLevel>
+            </Levels>
+        </px:PXGrid>
+        <px:PXPanel ID="PXPanel1" runat="server" SkinID="Buttons">
+            <px:PXButton ID="btnSave" runat="server" DialogResult="OK" Text="OK" />
+        </px:PXPanel>
+    </px:PXSmartPanel>
 </asp:content>

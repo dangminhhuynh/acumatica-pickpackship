@@ -104,6 +104,9 @@ namespace PX.Objects.SO
         {
             Transactions.Cache.AllowDelete = false;
             Transactions.Cache.AllowInsert = false;
+            Splits.Cache.AllowDelete = false;
+            Splits.Cache.AllowInsert = false;
+            Splits.Cache.AllowUpdate = false;
         }
 
         protected void PickPackInfo_ShipmentNbr_FieldUpdated(PXCache sender, PXFieldUpdatedEventArgs e)
@@ -120,6 +123,23 @@ namespace PX.Objects.SO
         {
             PXUIFieldAttribute.SetEnabled(sender, e.Row, false);
             PXUIFieldAttribute.SetEnabled<SOShipLinePick.pickedQty>(sender, e.Row, true);
+        }
+        
+        protected IEnumerable splits()
+        {
+            //We only use this view as a container for picked lot/serial numbers. We don't care about what's in the DB for this shipment.
+            foreach(var row in Splits.Cache.Cached)
+            {
+                yield return row;
+            }
+        }
+
+        public PXAction<PickPackInfo> allocations;
+        [PXUIField(DisplayName = "Allocations")]
+        [PXButton]
+        protected virtual void Allocations()
+        {
+            this.Splits.AskExt();
         }
 
         public PXAction<PickPackInfo> scan;
@@ -213,7 +233,7 @@ namespace PX.Objects.SO
             }
         }
 
-        protected void ClearScreen()
+        protected virtual void ClearScreen()
         {
             this.Document.Current.ShipmentNbr = null;
             this.Document.Current.CurrentInventoryID = null;
@@ -224,18 +244,28 @@ namespace PX.Objects.SO
 
         protected virtual void ProcessBarcode(string barcode)
         {
-            //TODO: Too long, split into functions
             var doc = this.Document.Current;
-
-            if(doc.LotSerialSearch == true)
+            if (doc.LotSerialSearch == true)
             {
                 //TODO: Implement lot/serial search mode
                 throw new NotImplementedException();
             }
-            
+
             if (doc.CurrentInventoryID == null)
             {
-                var rec = (PXResult<INItemXRef, InventoryItem, INLotSerClass, INSubItem>)
+                ProcessItemBarcode(barcode);
+            }
+            else
+            { 
+                ProcessLotSerialBarcode(barcode);
+            }
+        }
+
+        protected virtual void ProcessItemBarcode(string barcode)
+        {
+            var doc = this.Document.Current;
+
+            var rec = (PXResult<INItemXRef, InventoryItem, INLotSerClass, INSubItem>)
                           PXSelectJoin<INItemXRef,
                             InnerJoin<InventoryItem,
                                             On<InventoryItem.inventoryID, Equal<INItemXRef.inventoryID>,
@@ -250,66 +280,78 @@ namespace PX.Objects.SO
                                             And<INItemXRef.alternateType, Equal<INAlternateType.barcode>>>>
                             .SelectSingleBound(this, new object[] { doc }, barcode);
 
-                if (rec != null)
+            if (rec != null)
+            {
+                var item = (InventoryItem)rec;
+                var sub = (INSubItem)rec;
+                var lsclass = (INLotSerClass)rec;
+
+                if (lsclass.LotSerTrack != INLotSerTrack.NotNumbered &&
+                    (lsclass.LotSerIssueMethod == INLotSerIssueMethod.UserEnterable ||
+                    (lsclass.LotSerAssign == INLotSerAssign.WhenUsed && lsclass.AutoNextNbr == false)))
                 {
-                    var item = (InventoryItem)rec;
-                    var sub = (INSubItem)rec;
-                    var lsclass = (INLotSerClass)rec;
-
-                    if (lsclass.LotSerTrack != INLotSerTrack.NotNumbered &&
-                        (lsclass.LotSerIssueMethod == INLotSerIssueMethod.UserEnterable ||
-                        (lsclass.LotSerAssign == INLotSerAssign.WhenUsed && lsclass.AutoNextNbr == false)))
+                    if (lsclass.LotSerAssign == INLotSerAssign.WhenUsed && lsclass.LotSerTrackExpiration == true)
                     {
-                        if (lsclass.LotSerAssign == INLotSerAssign.WhenUsed && lsclass.LotSerTrackExpiration == true)
-                        {
-                            //TODO: Implement support for this.
-                            throw new NotImplementedException("Lot/serial numbers that are assigned when used and which require tracking of expiration date are not supported with this tool.");
-                        }
+                        //TODO: Implement support for this.
+                        throw new NotImplementedException("Lot/serial numbers that are assigned when used and which require tracking of expiration date are not supported with this tool.");
+                    }
 
-                        doc.CurrentInventoryID = item.InventoryID;
-                        doc.CurrentSubID = sub.SubItemID;
-                        doc.Status = ScanStatuses.Scan;
-                        doc.Message = String.Format("Please scan lot/serial number for item {0}.", item.InventoryCD.TrimEnd());
-                    }
-                    else
-                    {
-                        if (Document.Current.ScanMode == ScanModes.Add && AddPick(item.InventoryID, sub.SubItemID, Document.Current.Quantity, null))
-                        {
-                            doc.Status = ScanStatuses.Scan;
-                            doc.Message = String.Format("Added {0} x {1}.", Document.Current.Quantity, item.InventoryCD.TrimEnd());
-                            doc.Quantity = 1;
-                        }
-                        else if(Document.Current.ScanMode == ScanModes.Remove && RemovePick(item.InventoryID, sub.SubItemID, Document.Current.Quantity, null))
-                        {
-                            doc.Status = ScanStatuses.Scan;
-                            doc.Message = String.Format("Removed {0} x {1}.", Document.Current.Quantity, item.InventoryCD.TrimEnd());
-                            doc.Quantity = 1;
-                            doc.ScanMode = ScanModes.Add;
-                        }
-                        else
-                        {
-                            doc.Status = ScanStatuses.Error;
-                            doc.Message = String.Format("Item {0} not found on shipment.", item.InventoryCD.TrimEnd());
-                        }
-                    }
+                    doc.CurrentInventoryID = item.InventoryID;
+                    doc.CurrentSubID = sub.SubItemID;
+                    doc.Status = ScanStatuses.Scan;
+                    doc.Message = String.Format("Please scan lot/serial number for item {0}.", item.InventoryCD.TrimEnd());
                 }
                 else
                 {
-                    doc.Status = ScanStatuses.Error;
-                    doc.Message = String.Format("Barcode '{0}' not found in database.", barcode);
+                    if (Document.Current.ScanMode == ScanModes.Add && AddPick(item.InventoryID, sub.SubItemID, Document.Current.Quantity, null))
+                    {
+                        doc.Status = ScanStatuses.Scan;
+                        doc.Message = String.Format("Added {0} x {1}.", Document.Current.Quantity, item.InventoryCD.TrimEnd());
+                        doc.Quantity = 1;
+                    }
+                    else if (Document.Current.ScanMode == ScanModes.Remove && RemovePick(item.InventoryID, sub.SubItemID, Document.Current.Quantity, null))
+                    {
+                        doc.Status = ScanStatuses.Scan;
+                        doc.Message = String.Format("Removed {0} x {1}.", Document.Current.Quantity, item.InventoryCD.TrimEnd());
+                        doc.Quantity = 1;
+                        doc.ScanMode = ScanModes.Add;
+                    }
+                    else
+                    {
+                        doc.Status = ScanStatuses.Error;
+                        doc.Message = String.Format("Item {0} not found on shipment.", item.InventoryCD.TrimEnd());
+                    }
                 }
             }
             else
             {
-                var inventoryItem = (InventoryItem) PXSelectorAttribute.Select<PickPackInfo.currentInventoryID>(Document.Cache, Document.Current);
+                doc.Status = ScanStatuses.Error;
+                doc.Message = String.Format("Barcode '{0}' not found in database.", barcode);
+            }
+        }
 
-                if (Document.Current.ScanMode == ScanModes.Add && AddPick(doc.CurrentInventoryID, doc.CurrentSubID, Document.Current.Quantity, barcode))
+        private void ProcessLotSerialBarcode(string barcode)
+        {
+            var doc = this.Document.Current;
+            var inventoryItem = (InventoryItem)PXSelectorAttribute.Select<PickPackInfo.currentInventoryID>(Document.Cache, Document.Current);
+
+            if (Document.Current.ScanMode == ScanModes.Add)
+            {
+                if (AddPick(doc.CurrentInventoryID, doc.CurrentSubID, Document.Current.Quantity, barcode))
                 {
                     doc.Status = ScanStatuses.Scan;
                     doc.Message = String.Format("Added {0} x {1} ({2}).", Document.Current.Quantity, inventoryItem.InventoryCD.TrimEnd(), barcode);
                     doc.Quantity = 1;
                 }
-                else if(Document.Current.ScanMode == ScanModes.Remove && RemovePick(doc.CurrentInventoryID, doc.CurrentSubID, Document.Current.Quantity, barcode))
+                else
+                {
+                    doc.Status = ScanStatuses.Error;
+                    doc.Message = String.Format("Item {0} not found on shipment.", inventoryItem.InventoryCD.TrimEnd());
+                }
+            }
+            else if (Document.Current.ScanMode == ScanModes.Remove)
+            {
+                if (RemovePick(doc.CurrentInventoryID, doc.CurrentSubID, Document.Current.Quantity, barcode))
                 {
                     doc.Status = ScanStatuses.Scan;
                     doc.Message = String.Format("Removed {0} x {1} ({2}).", Document.Current.Quantity, inventoryItem.InventoryCD.TrimEnd(), barcode);
@@ -319,12 +361,12 @@ namespace PX.Objects.SO
                 else
                 {
                     doc.Status = ScanStatuses.Error;
-                    doc.Message = String.Format("Item not found on shipment.");
+                    doc.Message = String.Format("Lot/serial {0} not found in sufficient quantity on shipment.", barcode);
                 }
-
-                doc.CurrentInventoryID = null;
-                doc.CurrentSubID = null;
             }
+
+            doc.CurrentInventoryID = null;
+            doc.CurrentSubID = null;
         }
 
         protected virtual bool AddPick(int? inventoryID, int? subID, decimal? quantity, string lotSerialNumber)
@@ -381,8 +423,40 @@ namespace PX.Objects.SO
             }
         }
 
+        protected virtual decimal GetTotalQuantityPicked(int? inventoryID, int? subID, string lotSerialNumber)
+        {
+            decimal total = 0;
+
+            foreach (SOShipLinePick pickLine in this.Transactions.Select())
+            {
+                if(pickLine.InventoryID == inventoryID && pickLine.SubItemID == subID)
+                {
+                    this.Transactions.Current = pickLine;
+                    foreach(SOShipLineSplit split in this.Splits.Select())
+                    {
+                        if(split.LotSerialNbr == lotSerialNumber)
+                        {
+                            total = total + split.Qty.GetValueOrDefault();
+                        }
+                    }
+                }
+            }
+
+            return total;
+        }
+
         protected virtual bool RemovePick(int? inventoryID, int? subID, decimal? quantity, string lotSerialNumber)
         {
+            if(lotSerialNumber != null)
+            {
+                //First validate that we are fully able to remove the requested quantity for this lot/serial number
+                if(GetTotalQuantityPicked(inventoryID, subID, lotSerialNumber) < quantity)
+                {
+                    // We stop there otherwise we'll end up with a partial removal of this pick
+                    return false;
+                }
+            }
+
             SOShipLinePick firstLine = null;
             foreach (SOShipLinePick pickLine in this.Transactions.Select())
             {
@@ -445,8 +519,7 @@ namespace PX.Objects.SO
             
             if(quantity != 0)
             {
-                //TODO: Add user friendly error handling instead of exception
-                //TODO: Fix the splits in this condition - they will be out of balance with line and no easy way to recover.
+                // This condition is validated in RemovePick, so we should never get to this point.
                 throw new PXException("The system was not able to locate lot/serial number {0} (Quantity: {1}). Please check the shipment.", lotSerial, quantity);
             }
         }
