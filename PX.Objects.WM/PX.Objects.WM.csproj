@@ -53,6 +53,7 @@
     <Compile Include="DAC\SMPrintQueue.cs" />
     <Compile Include="DAC\SMPrintJob.cs" />
     <Compile Include="DAC\SMPrintJobParameter.cs" />
+    <Compile Include="DAC\SOPickPackShipPrintSetup.cs" />
     <Compile Include="DAC\SOShipLinePick.cs" />
     <Compile Include="Descriptor\Messages.cs" />
     <Compile Include="PickPackShip.cs" />

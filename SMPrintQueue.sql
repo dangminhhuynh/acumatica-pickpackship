@@ -9,9 +9,10 @@ CREATE TABLE [dbo].[SMPrintQueue](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 
+
 CREATE TABLE [dbo].[SMPrintJob](
 	[CompanyID] [int] NOT NULL DEFAULT ((0)),
-	[JobID] [uniqueidentifier] NOT NULL DEFAULT (newsequentialid()),
+	[JobID] [int] IDENTITY(1,1) NOT NULL,
 	[PrintQueue] [varchar](10) NOT NULL,
 	[ReportId] [varchar](8) NULL,
 	[NoteID] [uniqueidentifier] NULL,
@@ -31,7 +32,7 @@ CREATE TABLE [dbo].[SMPrintJob](
 
 CREATE TABLE [dbo].[SMPrintJobParameter](
 	[CompanyID] [int] NOT NULL DEFAULT ((0)),
-	[JobID] [uniqueidentifier] NOT NULL,
+	[JobID] [int] NOT NULL,
 	[ParameterName] [nvarchar](255) NOT NULL,
 	[ParameterValue] [nvarchar](255) NOT NULL,
  CONSTRAINT [PK_SMPrintJobParameter] PRIMARY KEY CLUSTERED 
@@ -43,3 +44,17 @@ CREATE TABLE [dbo].[SMPrintJobParameter](
 ) ON [PRIMARY]
 
 GO
+
+CREATE TABLE [dbo].[SOPickPackShipPrintSetup](
+	[CompanyID] [int] NOT NULL DEFAULT ((0)),
+	[UserID] [uniqueidentifier] NOT NULL,
+	[ShipmentConfirmation] [bit] NOT NULL,
+	[ShipmentConfirmationQueue] [varchar](10) NULL,
+	[ShipmentLabels] [bit] NOT NULL,
+	[ShipmentLabelsQueue] [varchar](10) NULL,
+ CONSTRAINT [PK_SOPickPackShipPrintSetup] PRIMARY KEY CLUSTERED 
+(
+	[CompanyID] ASC,
+	[UserID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]

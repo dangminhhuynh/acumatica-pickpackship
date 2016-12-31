@@ -7,11 +7,11 @@ namespace PX.SM
     public class SMPrintJobParameter : IBqlTable
     {
         public abstract class jobID : PX.Data.IBqlField { }
-        [PXDBGuid(IsKey = true)]
-        [PXDefault(typeof(SMPrintJob.jobID))]
+        [PXDBInt(IsKey = true)]
+        [PXDBDefault(typeof(SMPrintJob.jobID))]
         [PXParent(typeof(Select<SMPrintJob, Where<SMPrintJob.jobID, Equal<Current<SMPrintJobParameter.jobID>>>>))]
         [PXUIField(DisplayName = "Job ID")]
-        public virtual Guid? JobID { get; set; }
+        public virtual int? JobID { get; set; }
 
         public abstract class parameterName : PX.Data.IBqlField { }
         [PXDBString(255, IsKey = true, IsUnicode = true)]

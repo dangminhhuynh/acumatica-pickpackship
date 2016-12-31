@@ -118,8 +118,28 @@
         </ActionBar>
         <AutoSize Container="Window" Enabled="True" MinHeight="400" />
     </px:PXGrid>
+    <%-- Settings --%>
+    <px:PXSmartPanel ID="PanelPrintSettings" runat="server" Height="150px" Width="400px" Caption="Settings" CaptionVisible="True"
+        Key="PrintSetup" AutoCallBack-Command="Refresh" AutoCallBack-Enabled="True" AutoCallBack-Target="frmPrintSettings">
+        <px:PXFormView ID="frmPrintSettings" runat="server" DataSourceID="ds" DataMember="PrintSetup" SkinID="Transparent">
+            <Template>
+                <px:PXLayoutRule ID="PXLayoutRule1" runat="server" LabelsWidth="M" ControlSize="M" StartGroup="True" SuppressLabel="True" GroupCaption="Shipment Confirmation"/>
+                <px:PXCheckBox ID="edShipmentConfirmation" runat="server" DataField="ShipmentConfirmation" CommitChanges="true" />
+                <px:PXLayoutRule ID="PXLayoutRule3" runat="server" LabelsWidth="M" ControlSize="M" SuppressLabel="False"/>
+                <px:PXSelector ID="edShipmentConfirmationQueue" runat="server" DataField="ShipmentConfirmationQueue" CommitChanges="true" />
+                
+                <px:PXLayoutRule ID="PXLayoutRule2" runat="server" LabelsWidth="M" ControlSize="M" StartGroup="True" SuppressLabel="True" GroupCaption="Shipment Labels"/>
+                <px:PXCheckBox ID="edShipmentLabels" runat="server" DataField="ShipmentLabels" CommitChanges="true" />
+                <px:PXLayoutRule ID="PXLayoutRule5" runat="server" LabelsWidth="M" ControlSize="M" SuppressLabel="False"/>
+                <px:PXSelector ID="edShipmentLabelsQueue" runat="server" DataField="ShipmentLabelsQueue" CommitChanges="true" />
+            </Template>
+        </px:PXFormView>
+        <px:PXPanel ID="PXPanel2" runat="server" SkinID="Buttons">
+            <px:PXButton ID="pbClose" runat="server" DialogResult="OK" Text="Close"/>
+        </px:PXPanel>
+    </px:PXSmartPanel>
     <%-- Bin/Lot/Serial Numbers --%>
-    <px:PXSmartPanel ID="PanelLS" runat="server" Style="z-index: 108; left: 252px; position: absolute; top: 531px; height: 360px;" Width="764px" Caption="Allocations" CaptionVisible="True"
+    <px:PXSmartPanel ID="PanelLS" runat="server" Width="764px" Caption="Allocations" CaptionVisible="True"
         Key="Splits" AutoCallBack-Command="Refresh" AutoCallBack-Enabled="True" AutoCallBack-Target="grid2">
         <px:PXGrid ID="grid2" runat="server" Width="100%" AutoAdjustColumns="True" DataSourceID="ds" Style="border-width: 1px 0px; left: 0px; top: 0px; height: 192px;" SyncPosition="true">
             <AutoSize Enabled="true" />

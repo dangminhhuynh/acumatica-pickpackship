@@ -100,6 +100,7 @@ namespace PX.Objects.SO
     public class PickPackShip : PXGraph<PickPackShip>
     {
         public PXSetup<INSetup> Setup;
+        public PXSelect<SOPickPackShipPrintSetup, Where<SOPickPackShipPrintSetup.userID, Equal<Current<AccessInfo.userID>>>> PrintSetup;
         public PXCancel<PickPackInfo> Cancel;
         public PXFilter<PickPackInfo> Document;
         public PXSelect<SOShipment, Where<SOShipment.shipmentNbr, Equal<Current<PickPackInfo.shipmentNbr>>>> Shipment;
@@ -114,7 +115,7 @@ namespace PX.Objects.SO
             Splits.Cache.AllowInsert = false;
             Splits.Cache.AllowUpdate = false;
         }
-
+        
         protected void PickPackInfo_ShipmentNbr_FieldUpdated(PXCache sender, PXFieldUpdatedEventArgs e)
         {
             var doc = e.Row as PickPackInfo;
@@ -439,7 +440,7 @@ namespace PX.Objects.SO
                 }
                 else
                 {
-                    throw new PXException("More than one lot/serial entry was found. This is not yet supported.");
+                    throw new PXException("More than one lot/serial entry was found. This is not yet supported, please search by Inventory ID.");
                 }
             }
 
@@ -660,38 +661,62 @@ namespace PX.Objects.SO
                 }
             }
         }
-        
+
+        public PXAction<PickPackInfo> Settings;
+        [PXUIField(DisplayName = "Settings")]
+        [PXButton]
+        protected virtual void settings()
+        {
+            PrintSetup.Current = PrintSetup.Select();
+            if (PrintSetup.Current == null)
+            {
+                PrintSetup.Current = PrintSetup.Insert((SOPickPackShipPrintSetup)PrintSetup.Cache.CreateInstance());
+            }
+
+            if (PrintSetup.AskExt() == WebDialogResult.OK)
+            {
+                Caches[typeof(SOPickPackShipPrintSetup)].Persist(PXDBOperation.Insert);
+                Caches[typeof(SOPickPackShipPrintSetup)].Persist(PXDBOperation.Update);
+            }
+        }
+
         protected virtual void PreparePrintJobs(SOShipmentEntry graph)
         {
-            //TODO: Add options to decide what should be printed and to which queue.
-            var jobMaint = PXGraph.CreateInstance<PX.SM.PrintJobMaint>();
+            PrintJobMaint jobMaint = null;
+            var printSetup = (SOPickPackShipPrintSetup)PrintSetup.Select();
 
-            //Shipment confirmation
-            AddPrintJob(jobMaint, "GAB1", "SO642000", new Dictionary<string, string> { { "ShipmentNbr", graph.Document.Current.ShipmentNbr } });
-
-            //Shipment labels
-            UploadFileMaintenance ufm = PXGraph.CreateInstance<UploadFileMaintenance>();
-            foreach (SOPackageDetail package in graph.Packages.Select())
+            if (printSetup.ShipmentConfirmation == true)
+            { 
+                if(jobMaint == null) jobMaint = PXGraph.CreateInstance<PrintJobMaint>();
+                AddPrintJob(jobMaint, printSetup.ShipmentConfirmationQueue, "SO642000", new Dictionary<string, string> { { "ShipmentNbr", graph.Document.Current.ShipmentNbr } });
+            }
+            
+            if (printSetup.ShipmentLabels == true)
             {
-                Guid[] files = PXNoteAttribute.GetFileNotes(graph.Packages.Cache, package);
-                foreach (Guid id in files)
+                if (jobMaint == null) jobMaint = PXGraph.CreateInstance<PrintJobMaint>();
+                UploadFileMaintenance ufm = PXGraph.CreateInstance<UploadFileMaintenance>();
+                foreach (SOPackageDetail package in graph.Packages.Select())
                 {
-                    FileInfo fileInfo = ufm.GetFile(id);
-                    string extension = System.IO.Path.GetExtension(fileInfo.Name).ToLower();
-                    if(extension == ".pdf")
+                    Guid[] files = PXNoteAttribute.GetFileNotes(graph.Packages.Cache, package);
+                    foreach (Guid id in files)
                     {
-                        AddPrintJob(jobMaint, "GAB1", "", new Dictionary<string, string> { { "FILEID", id.ToString() } });
-                    }
-                    else
-                    {
-                        //TODO: Add support for other file types - ZPL, EPL, etc...
-                        PXTrace.WriteWarning("Unsupported file extension attached to the package for Shipment {0}/{1}", graph.Document.Current.ShipmentNbr, package.LineNbr);
+                        FileInfo fileInfo = ufm.GetFile(id);
+                        string extension = System.IO.Path.GetExtension(fileInfo.Name).ToLower();
+                        if (extension == ".pdf")
+                        {
+                            AddPrintJob(jobMaint, printSetup.ShipmentLabelsQueue, "", new Dictionary<string, string> { { "FILEID", id.ToString() } });
+                        }
+                        else
+                        {
+                            //TODO: Add support for other file types - ZPL, EPL, etc...
+                            PXTrace.WriteWarning("Unsupported file extension attached to the package for Shipment {0}/{1}", graph.Document.Current.ShipmentNbr, package.LineNbr);
+                        }
                     }
                 }
             }
         }
 
-        protected virtual void AddPrintJob(PX.SM.PrintJobMaint graph, string printQueue, string reportID, Dictionary<string, string> parameters)
+        protected virtual void AddPrintJob(PrintJobMaint graph, string printQueue, string reportID, Dictionary<string, string> parameters)
         {
             var job = (PX.SM.SMPrintJob)graph.Job.Cache.CreateInstance();
             job.PrintQueue = printQueue;

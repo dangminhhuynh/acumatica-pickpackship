@@ -7,11 +7,11 @@ namespace PX.SM
     public class SMPrintJob : IBqlTable
     {
         public abstract class jobID : PX.Data.IBqlField { }
-        [PXDBGuid(true, IsKey = true)]
+        [PXDBIdentity(IsKey = true)]
         [PXDefault]
         [PXUIField(DisplayName = "Job ID", Visibility = PXUIVisibility.SelectorVisible)]
         [PXSelector(typeof(SMPrintJob.jobID))]
-        public virtual Guid? JobID { get; set; }
+        public virtual int? JobID { get; set; }
 
         public abstract class printQueue : PX.Data.IBqlField { }
         [PXDBString(10)]

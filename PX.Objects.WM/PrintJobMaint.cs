@@ -6,7 +6,7 @@ namespace PX.SM
 {
     public class PrintJobMaint : PXGraph<PrintJobMaint, SMPrintJob>
     {
-        public PXSelectOrderBy<SMPrintJob, OrderBy<Asc<SMPrintJob.createdDateTime>>> Job;
+        public PXSelect<SMPrintJob> Job;
         public PXSelect<SMPrintJobParameter, Where<SMPrintJobParameter.jobID, Equal<Current<SMPrintJob.jobID>>>> Parameters;
     }
 }
