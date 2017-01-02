@@ -28,6 +28,7 @@ namespace PX.Objects.SO
 
         public const string Clear = "Z";
         public const string Confirm = "C";
+        public const string ConfirmAll = "CX";
         public const string Add = "A";
         public const string Remove = "R";
         public const string Item = "I";
@@ -99,6 +100,12 @@ namespace PX.Objects.SO
 
     public class PickPackShip : PXGraph<PickPackShip>
     {
+        public enum ConfirmMode
+        {
+            PickedItems,
+            AllItems
+        }
+
         public PXSetup<INSetup> Setup;
         public PXSelect<SOPickPackShipPrintSetup, Where<SOPickPackShipPrintSetup.userID, Equal<Current<AccessInfo.userID>>>> PrintSetup;
         public PXCancel<PickPackInfo> Cancel;
@@ -236,6 +243,10 @@ namespace PX.Objects.SO
                     case ScanCommands.Confirm:
                         //Status/message will be set by Confirm action
                         this.Confirm.Press();
+                        break;
+                    case ScanCommands.ConfirmAll:
+                        //Status/message will be set by ConfirmAll action
+                        this.ConfirmAll.Press();
                         break;
                     case ScanCommands.Clear:
                         ClearScreen();
@@ -603,9 +614,22 @@ namespace PX.Objects.SO
         }
 
         public PXAction<PickPackInfo> Confirm;
-        [PXUIField(DisplayName = "Confirm")]
+        [PXUIField(DisplayName = "Confirm Picked")]
         [PXButton]
         protected virtual void confirm()
+        {
+            ConfirmShipment(ConfirmMode.PickedItems);
+        }
+
+        public PXAction<PickPackInfo> ConfirmAll;
+        [PXUIField(DisplayName = "Confirm All")]
+        [PXButton]
+        protected virtual void confirmAll()
+        {
+            ConfirmShipment(ConfirmMode.AllItems);
+        }
+
+        protected virtual void ConfirmShipment(ConfirmMode confirmMode)
         {
             var doc = this.Document.Current;
             doc.Status = ScanStatuses.Information;
@@ -623,42 +647,57 @@ namespace PX.Objects.SO
                 doc.Status = ScanStatuses.Error;
                 doc.Message = "Shipment not found.";
                 this.Document.Update(doc);
+                return;
             }
-            else
+
+            if (confirmMode == ConfirmMode.AllItems || !IsConfirmationNeeded() ||
+                this.Document.Ask("The quantity picked for one or more lines doesn't match with the shipment. Do you want to continue?", MessageButtons.YesNo) == PX.Data.WebDialogResult.Yes)
             {
-                if (!IsConfirmationNeeded() ||
-                    this.Document.Ask("The quantity picked for one or more lines doesn't match with the shipment. Do you want to continue?", MessageButtons.YesNo) == PX.Data.WebDialogResult.Yes)
+                PXLongOperation.StartOperation(this, () =>
                 {
-                    PXLongOperation.StartOperation(this, () =>
+                    try
                     {
-                        try
+                        graph.Document.Current = shipment;
+
+                        if (confirmMode == ConfirmMode.PickedItems)
                         {
-                            graph.Document.Current = shipment;
-                            UpdateShipmentWithPickResults(graph);
-
-                            PXAction confAction = graph.Actions["Action"];
-                            var adapter = new PXAdapter(new DummyView(graph, graph.Document.View.BqlSelect, new List<object> { graph.Document.Current }));
-                            adapter.Menu = SOShipmentEntryActionsAttribute.Messages.ConfirmShipment;
-                            confAction.PressButton(adapter);
-
-                            PreparePrintJobs(graph);
-
-                            ClearScreen();
-
-                            doc.Status = ScanStatuses.Success;
-                            doc.Message = String.Format("Shipment {0} confirmed.", doc.ShipmentNbr);
-                            
-                            this.Document.Update(doc);
+                            UpdateShipmentLinesWithPickResults(graph);
                         }
-                        catch (Exception e)
+
+                        ConfirmAllPackages(graph);
+
+                        PXAction confAction = graph.Actions["Action"];
+                        var adapter = new PXAdapter(new DummyView(graph, graph.Document.View.BqlSelect, new List<object> { graph.Document.Current }));
+                        adapter.Menu = SOShipmentEntryActionsAttribute.Messages.ConfirmShipment;
+                        confAction.PressButton(adapter);
+
+                        PreparePrintJobs(graph);
+
+                        doc.Status = ScanStatuses.Success;
+                        if(confirmMode == ConfirmMode.AllItems)
+                        { 
+                            doc.Message = String.Format("Shipment {0} confirmed in full.", doc.ShipmentNbr);
+                        }
+                        else if(confirmMode == ConfirmMode.PickedItems)
                         {
-                            doc.Status = ScanStatuses.Error;
-                            doc.Message = e.Message;
-                            this.Document.Update(doc);
-                            throw;
+                            doc.Message = String.Format("Shipment {0} confirmed as picked.", doc.ShipmentNbr);
                         }
-                    });
-                }
+                        else
+                        {
+                            System.Diagnostics.Debug.Assert(false, "ConfirmMode invalid");
+                        }
+
+                        ClearScreen();
+                        this.Document.Update(doc);
+                    }
+                    catch (Exception e)
+                    {
+                        doc.Status = ScanStatuses.Error;
+                        doc.Message = e.Message;
+                        this.Document.Update(doc);
+                        throw;
+                    }
+                });
             }
         }
 
@@ -746,7 +785,7 @@ namespace PX.Objects.SO
             return false;
         }
 
-        protected virtual void UpdateShipmentWithPickResults(SOShipmentEntry graph)
+        protected virtual void UpdateShipmentLinesWithPickResults(SOShipmentEntry graph)
         {
             foreach(SOShipLinePick pickLine in this.Transactions.Select())
             {
@@ -754,8 +793,11 @@ namespace PX.Objects.SO
                 if(graph.Transactions.Current != null)
                 {
                     //Update shipped quantity to match what was picked
-                    graph.Transactions.Current.ShippedQty = pickLine.PickedQty.GetValueOrDefault();
-                    graph.Transactions.Update(graph.Transactions.Current);
+                    if (graph.Transactions.Current.ShippedQty != pickLine.PickedQty)
+                    {
+                        graph.Transactions.Current.ShippedQty = pickLine.PickedQty.GetValueOrDefault();
+                        graph.Transactions.Update(graph.Transactions.Current);
+                    }
 
                     //Set any lot/serial numbers that were assigned
                     bool initialized = false;
@@ -782,15 +824,18 @@ namespace PX.Objects.SO
                     throw new PXException("Line {0} not found in shipment.", pickLine.LineNbr);
                 }
             }
+        }
 
-            foreach(SOPackageDetail package in graph.Packages.Select())
+        protected virtual void ConfirmAllPackages(SOShipmentEntry graph)
+        {
+            foreach (SOPackageDetail package in graph.Packages.Select())
             {
                 //TODO: Add proper support for packages
                 package.Confirmed = true;
                 graph.Packages.Update(package);
             }
         }
-
+        
         private sealed class DummyView : PXView
         {
             private readonly List<object> _records;

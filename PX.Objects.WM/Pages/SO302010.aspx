@@ -43,6 +43,7 @@
         <ClientEvents CommandPerformed="CommandResult"/>
 		<CallbackCommands>
 			<px:PXDSCallbackCommand Name="Confirm" Visible="True" CommitChanges="True" />
+			<px:PXDSCallbackCommand Name="ConfirmAll" Visible="True" CommitChanges="True" />
             <px:PXDSCallbackCommand Name="Scan" Visible="False" CommitChanges="True" />
             <px:PXDSCallbackCommand Name="Allocations" Visible="False" CommitChanges="true" DependOnGrid="grid" />
 		</CallbackCommands>
