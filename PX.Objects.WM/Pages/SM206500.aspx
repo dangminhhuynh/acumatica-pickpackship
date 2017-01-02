@@ -18,7 +18,6 @@
 	<px:PXFormView ID="form" runat="server" DataSourceID="ds" Height="63px" Width="100%" Visible="true" DataMember="Job">
         <Template>
             <px:PXLayoutRule runat="server" StartColumn="True" LabelsWidth="S" ControlSize="L" />
-            <px:PXSelector ID="edJobID" runat="server" DataField="JobID"/>
             <px:PXLayoutRule runat="server" LabelsWidth="S" ControlSize="S" />
             <px:PXSelector ID="edPrintQueue" runat="server" DataField="PrintQueue"/>
             <px:PXMaskEdit ID="edReportId" runat="server" DataField="ReportId"/>
