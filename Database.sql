@@ -57,7 +57,6 @@ CREATE TABLE [dbo].[SMScale](
 	[ScaleID] [varchar](10) NOT NULL,
 	[Descr] [nvarchar](100) NULL,
 	[LastWeight] [decimal](25,6) NULL,
-	[LastWeightTimestamp] [datetime] NULL,
 	[tstamp] [timestamp] NOT NULL,
 	[CreatedByID] [uniqueidentifier] NOT NULL,
 	[CreatedByScreenID] [char](8) NOT NULL,
