@@ -9,5 +9,7 @@ namespace PX.Objects.WM
     {
         public const string Add = "Add";
         public const string Remove = "Remove";
+        public const string Weight = "Weight";
+
     }
 }

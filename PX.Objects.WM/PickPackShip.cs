@@ -5,6 +5,7 @@ using PX.Objects.IN;
 using System.Collections.Generic;
 using PX.Objects.AR;
 using PX.SM;
+using PX.Objects.CS;
 
 namespace PX.Objects.SO
 {
@@ -15,11 +16,12 @@ namespace PX.Objects.SO
         public const string Scan = "SCN";
         public const string Error = "ERR";
     }
-
+    
     public static class ScanModes
     {
         public const string Add = "A";
         public const string Remove = "R";
+        public const string Weight = "W";
     }
 
     public static class ScanCommands
@@ -33,6 +35,8 @@ namespace PX.Objects.SO
         public const string Remove = "R";
         public const string Item = "I";
         public const string LotSerial = "S";
+        public const string NewPackage = "P";
+        public const string PackageComplete = "PC";
     }
 
     public class PickPackInfo : IBqlTable
@@ -61,10 +65,10 @@ namespace PX.Objects.SO
         [PXDefault(TypeCode.Decimal, "1.0")]
         [PXUIField(DisplayName = "Quantity")]
         public virtual decimal? Quantity { get; set; }
-
+        
         public abstract class scanMode : IBqlField { }
         [PXString(1, IsFixed = true)]
-        [PXStringList(new[] { ScanModes.Add, ScanModes.Remove }, new[] { PX.Objects.WM.Messages.Add, PX.Objects.WM.Messages.Remove })]
+        [PXStringList(new[] { ScanModes.Add, ScanModes.Remove, ScanModes.Weight }, new[] { PX.Objects.WM.Messages.Add, PX.Objects.WM.Messages.Remove, PX.Objects.WM.Messages.Weight })]
         [PXDefault(ScanModes.Add)]
         [PXUIField(DisplayName = "Scan Mode")]
         public virtual string ScanMode { get; set; }
@@ -87,6 +91,10 @@ namespace PX.Objects.SO
         [Location]
         public virtual int? CurrentLocationID { get; set; }
 
+        public abstract class currentPackageLineNbr : IBqlField { }
+        [PXInt]
+        public virtual int? CurrentPackageLineNbr { get; set; }
+
         public abstract class status : IBqlField { }
         [PXString(3, IsUnicode = true)]
         [PXUIField(DisplayName = "Status", Enabled = false, Visible = false)]
@@ -106,23 +114,40 @@ namespace PX.Objects.SO
             AllItems
         }
 
+        public const double ScaleWeightValiditySeconds = 30;
+
         public PXSetup<INSetup> Setup;
-        public PXSelect<SOPickPackShipPrintSetup, Where<SOPickPackShipPrintSetup.userID, Equal<Current<AccessInfo.userID>>>> PrintSetup;
+        public PXSelect<SOPickPackShipUserSetup, Where<SOPickPackShipUserSetup.userID, Equal<Current<AccessInfo.userID>>>> UserSetup;
         public PXCancel<PickPackInfo> Cancel;
         public PXFilter<PickPackInfo> Document;
         public PXSelect<SOShipment, Where<SOShipment.shipmentNbr, Equal<Current<PickPackInfo.shipmentNbr>>>> Shipment;
         public PXSelect<SOShipLinePick, Where<SOShipLinePick.shipmentNbr, Equal<Current<PickPackInfo.shipmentNbr>>>, OrderBy<Asc<SOShipLinePick.shipmentNbr, Asc<SOShipLine.lineNbr>>>> Transactions;
         public PXSelect<SOShipLineSplit, Where<SOShipLineSplit.shipmentNbr, Equal<Current<SOShipLinePick.shipmentNbr>>, And<SOShipLineSplit.lineNbr, Equal<Current<SOShipLinePick.lineNbr>>>>> Splits;
+        public PXSelect<SOPackageDetail, Where<SOPackageDetail.shipmentNbr, Equal<Current<SOShipLinePick.shipmentNbr>>>> Packages;
 
         protected void PickPackInfo_RowSelected(PXCache sender, PXRowSelectedEventArgs e)
         {
+            EnsureUserSetupExists();
             Transactions.Cache.AllowDelete = false;
             Transactions.Cache.AllowInsert = false;
             Splits.Cache.AllowDelete = false;
             Splits.Cache.AllowInsert = false;
             Splits.Cache.AllowUpdate = false;
+
+            var doc = this.Document.Current;
+            Confirm.SetEnabled(doc != null && doc.ShipmentNbr != null);
+            ConfirmAll.SetEnabled(doc != null && doc.ShipmentNbr != null);
         }
-        
+
+        protected virtual void EnsureUserSetupExists()
+        {
+            UserSetup.Current = UserSetup.Select();
+            if (UserSetup.Current == null)
+            {
+                UserSetup.Current = UserSetup.Insert((SOPickPackShipUserSetup)UserSetup.Cache.CreateInstance());
+            }
+        }
+
         protected void PickPackInfo_ShipmentNbr_FieldUpdated(PXCache sender, PXFieldUpdatedEventArgs e)
         {
             var doc = e.Row as PickPackInfo;
@@ -158,6 +183,15 @@ namespace PX.Objects.SO
             }
         }
 
+        protected IEnumerable packages()
+        {
+            //We only use this view as a container for picked packages. We don't care about what's in the DB for this shipment.
+            foreach (var row in Packages.Cache.Cached)
+            {
+                yield return row;
+            }
+        }
+
         public PXAction<PickPackInfo> allocations;
         [PXUIField(DisplayName = "Allocations")]
         [PXButton]
@@ -166,10 +200,10 @@ namespace PX.Objects.SO
             this.Splits.AskExt();
         }
 
-        public PXAction<PickPackInfo> scan;
+        public PXAction<PickPackInfo> Scan;
         [PXUIField(DisplayName = "Scan")]
         [PXButton]
-        protected virtual void Scan()
+        protected virtual void scan()
         {
             var doc = this.Document.Current;
 
@@ -180,24 +214,22 @@ namespace PX.Objects.SO
             }
             else
             {
-                string barcode = String.Empty;
-                if (doc.Barcode[0] == ScanCommands.CommandChar)
+                switch (doc.ScanMode)
                 {
-                    var segments = doc.Barcode.Split(ScanCommands.CommandChar);
-                    if (segments.Length > 3)
-                    {
-                        doc.Status = ScanStatuses.Error;
-                        doc.Message = "Barcode contains too many commands and cannot be processed.";
-                    }
-                    else
-                    {
-                        ProcessCommand(segments[1]);
-                        if (segments.Length > 2) ProcessBarcode(segments[2]);
-                    }
-                }
-                else
-                {
-                    ProcessBarcode(doc.Barcode);
+                    case ScanModes.Add:
+                    case ScanModes.Remove:
+                        if (doc.Barcode[0] == ScanCommands.CommandChar)
+                        {
+                            ProcessCommands(doc.Barcode);
+                        }
+                        else
+                        {
+                            ProcessBarcode(doc.Barcode);
+                        }
+                        break;
+                    case ScanModes.Weight:
+                        ProcessWeight(doc.Barcode);
+                        break;
                 }
             }
 
@@ -205,20 +237,26 @@ namespace PX.Objects.SO
             this.Document.Update(doc);
         }
 
-        protected virtual void ProcessCommand(string command)
+        protected virtual void ProcessCommands(string barcode)
         {
             var doc = this.Document.Current;
-
+            var commands = barcode.Split(ScanCommands.CommandChar);
+           
             int quantity = 0;
-            if(int.TryParse(command, out quantity))
+            if(int.TryParse(commands[1], out quantity))
             {
                 doc.Quantity = quantity;
                 doc.Status = ScanStatuses.Information;
                 doc.Message = String.Format("Quantity set to {0}.", quantity);
+
+                if(commands.Length > 2)
+                {
+                    ProcessBarcode(commands[2]);
+                }
             }
             else
             {
-                switch(command)
+                switch(commands[1])
                 {
                     case ScanCommands.Add:
                         this.Document.Current.ScanMode = ScanModes.Add;
@@ -241,17 +279,21 @@ namespace PX.Objects.SO
                         doc.Message = "Ready to search by lot/serial number.";
                         break;
                     case ScanCommands.Confirm:
-                        //Status/message will be set by Confirm action
                         this.Confirm.Press();
                         break;
                     case ScanCommands.ConfirmAll:
-                        //Status/message will be set by ConfirmAll action
                         this.ConfirmAll.Press();
                         break;
                     case ScanCommands.Clear:
                         ClearScreen();
                         doc.Status = ScanStatuses.Success;
                         doc.Message = "Screen cleared.";
+                        break;
+                    case ScanCommands.NewPackage:
+                        ProcessNewPackageCommand(commands);
+                        break;
+                    case ScanCommands.PackageComplete:
+                        ProcessPackageCompleteCommand();
                         break;
                     default:
                         doc.Status = ScanStatuses.Error;
@@ -261,12 +303,33 @@ namespace PX.Objects.SO
             }
         }
 
+        protected virtual void ProcessWeight(string barcode)
+        {
+            var doc = this.Document.Current;
+
+            decimal weight = 0;
+            if(decimal.TryParse(barcode, out weight) && weight >= 0)
+            {
+                doc.Status = ScanStatuses.Information;
+                doc.Message = String.Format("Package is complete. Weight: {0:0.0000} {1}", weight, Setup.Current.WeightUOM);
+                SetCurrentPackageWeight(weight);
+                doc.CurrentPackageLineNbr = null;
+                doc.ScanMode = ScanModes.Add;
+            }
+            else
+            {
+                doc.Status = ScanStatuses.Error;
+                doc.Message = String.Format("{0} is not a valid weight.", barcode);
+            }
+        }
+
         protected virtual void ClearScreen()
         {
             this.Document.Current.ShipmentNbr = null;
             this.Document.Current.CurrentInventoryID = null;
             this.Document.Current.CurrentSubID = null;
             this.Document.Current.CurrentLocationID = null;
+            this.Document.Current.CurrentPackageLineNbr = null;
             this.Transactions.Cache.Clear();
             this.Splits.Cache.Clear();
         }
@@ -313,7 +376,12 @@ namespace PX.Objects.SO
                                             And<INItemXRef.alternateType, Equal<INAlternateType.barcode>>>>
                             .SelectSingleBound(this, new object[] { doc }, barcode);
 
-            if (rec != null)
+            if (rec == null)
+            {
+                doc.Status = ScanStatuses.Error;
+                doc.Message = String.Format("Barcode {0} not found in database.", barcode);
+            }
+            else
             {
                 var inventoryItem = (InventoryItem)rec;
                 var sub = (INSubItem)rec;
@@ -355,11 +423,6 @@ namespace PX.Objects.SO
                         doc.Message = String.Format("Item {0} not found on shipment.", inventoryItem.InventoryCD.TrimEnd());
                     }
                 }
-            }
-            else
-            {
-                doc.Status = ScanStatuses.Error;
-                doc.Message = String.Format("Barcode {0} not found in database.", barcode);
             }
         }
 
@@ -433,6 +496,94 @@ namespace PX.Objects.SO
             doc.CurrentInventoryID = null;
             doc.CurrentSubID = null;
             doc.CurrentLocationID = null;
+        }
+
+        protected virtual void ProcessNewPackageCommand(string[] commands)
+        {
+            var doc = this.Document.Current;
+           
+            if(commands.Length != 3)
+            {
+                //We're expecting something that looks like *P*LARGE
+                doc.Status = ScanStatuses.Error;
+                doc.Message = String.Format("The New Package command must be followed by a Box ID.");
+                return;
+            }
+
+            if(doc.CurrentPackageLineNbr != null)
+            {
+                doc.Status = ScanStatuses.Error;
+                doc.Message = String.Format("Please complete the current package using the {0}{1} command.", ScanCommands.CommandChar, ScanCommands.PackageComplete);
+                return;
+            }
+
+            string boxID = commands[2];
+            var box = (CSBox) PXSelect<CSBox, Where<CSBox.boxID, Equal<Required<CSBox.boxID>>>>.Select(this, boxID);
+            if(box == null)
+            {
+                doc.Status = ScanStatuses.Error;
+                doc.Message = String.Format("Box {0} cannot be found in the system.", boxID);
+            }
+            else
+            {
+                var newPackage = (SOPackageDetail) this.Packages.Cache.CreateInstance();
+                newPackage.BoxID = box.BoxID;
+                newPackage = this.Packages.Insert(newPackage);
+
+                doc.CurrentPackageLineNbr = newPackage.LineNbr;
+                doc.Status = ScanStatuses.Information;
+                doc.Message = String.Format("Box {0} added to the shipment. Ready to pick items.", boxID);
+            }
+        }
+
+        protected virtual void ProcessPackageCompleteCommand()
+        {
+            var doc = this.Document.Current;
+
+            if (doc.CurrentPackageLineNbr == null)
+            {
+                doc.Status = ScanStatuses.Error;
+                doc.Message = "There is no package currently selected or in process.";
+            }
+            else
+            {
+                if(this.UserSetup.Current.UseScale == true)
+                {
+                    //TODO: Implement this - harcoded just for testing.
+                    decimal weight = 1.25M;
+                    DateTime weightTimestamp = DateTime.Now;
+
+                    if (weightTimestamp.AddSeconds(ScaleWeightValiditySeconds) < DateTime.Now)
+                    {
+                        doc.Status = ScanStatuses.Error;
+                        doc.Message = String.Format("Measurement on scale {0} is more than {1} seconds old. Remove package from the scale and weigh it again.", this.UserSetup.Current.ScaleID, ScaleWeightValiditySeconds);
+                    }
+                    else
+                    {
+                        doc.Status = ScanStatuses.Information;
+                        doc.Message = String.Format("Package is complete. Weight: {0:0.0000} {1}", weight, Setup.Current.WeightUOM);
+                        SetCurrentPackageWeight(weight);
+                        doc.CurrentPackageLineNbr = null;
+                    }
+                }
+                else
+                {
+                    doc.Status = ScanStatuses.Information;
+                    doc.Message = "Please enter the total weight of this package and press enter.";
+                    doc.ScanMode = ScanModes.Weight;
+                }
+            }
+        }
+
+        protected virtual void SetCurrentPackageWeight(decimal weight)
+        {
+            var package = (SOPackageDetail) this.Packages.Search<SOPackageDetail.lineNbr>(this.Document.Current.CurrentPackageLineNbr);
+            if(this.Packages.Current == null)
+            {
+                throw new PXException("Unable to find package line {0} - was it deleted manually?", this.Document.Current.CurrentPackageLineNbr);
+            }
+            package.Weight = weight;
+            this.Packages.Update(package);
         }
 
         protected virtual bool SetCurrentInventoryIDForLotSerial(string barcode)
@@ -636,12 +787,16 @@ namespace PX.Objects.SO
             doc.Message = String.Empty;
             SOShipmentEntry graph = PXGraph.CreateInstance<SOShipmentEntry>();
             SOShipment shipment = null;
-
-            if (doc.ShipmentNbr != null)
+            
+            if(doc.CurrentPackageLineNbr != null)
             {
-                shipment = graph.Document.Search<SOShipment.shipmentNbr>(doc.ShipmentNbr);
+                doc.Status = ScanStatuses.Error;
+                doc.Message = String.Format("Please complete the current package using the {0}{1} command.", ScanCommands.CommandChar, ScanCommands.PackageComplete);
+                this.Document.Update(doc);
+                return;
             }
 
+            shipment = graph.Document.Search<SOShipment.shipmentNbr>(doc.ShipmentNbr);
             if (shipment == null)
             {
                 doc.Status = ScanStatuses.Error;
@@ -664,7 +819,7 @@ namespace PX.Objects.SO
                             UpdateShipmentLinesWithPickResults(graph);
                         }
 
-                        ConfirmAllPackages(graph);
+                        UpdateShipmentPackages(graph);
 
                         PXAction confAction = graph.Actions["Action"];
                         var adapter = new PXAdapter(new DummyView(graph, graph.Document.View.BqlSelect, new List<object> { graph.Document.Current }));
@@ -706,23 +861,17 @@ namespace PX.Objects.SO
         [PXButton]
         protected virtual void settings()
         {
-            PrintSetup.Current = PrintSetup.Select();
-            if (PrintSetup.Current == null)
+            if (UserSetup.AskExt() == WebDialogResult.OK)
             {
-                PrintSetup.Current = PrintSetup.Insert((SOPickPackShipPrintSetup)PrintSetup.Cache.CreateInstance());
-            }
-
-            if (PrintSetup.AskExt() == WebDialogResult.OK)
-            {
-                Caches[typeof(SOPickPackShipPrintSetup)].Persist(PXDBOperation.Insert);
-                Caches[typeof(SOPickPackShipPrintSetup)].Persist(PXDBOperation.Update);
+                Caches[typeof(SOPickPackShipUserSetup)].Persist(PXDBOperation.Insert);
+                Caches[typeof(SOPickPackShipUserSetup)].Persist(PXDBOperation.Update);
             }
         }
 
         protected virtual void PreparePrintJobs(SOShipmentEntry graph)
         {
             PrintJobMaint jobMaint = null;
-            var printSetup = (SOPickPackShipPrintSetup)PrintSetup.Select();
+            var printSetup = (SOPickPackShipUserSetup)UserSetup.Select();
 
             if (printSetup.ShipmentConfirmation == true)
             { 
@@ -826,16 +975,31 @@ namespace PX.Objects.SO
             }
         }
 
-        protected virtual void ConfirmAllPackages(SOShipmentEntry graph)
+        protected virtual void UpdateShipmentPackages(SOShipmentEntry graph)
         {
-            foreach (SOPackageDetail package in graph.Packages.Select())
+            //Delete any existing package row - we ignore what auto-packaging configured and override with packages that were actually used.
+            foreach(SOPackageDetail package in graph.Packages.Select())
             {
-                //TODO: Add proper support for packages
+                graph.Packages.Delete(package);
+            }
+
+            foreach (SOPackageDetail package in this.Packages.Select())
+            {
                 package.Confirmed = true;
-                graph.Packages.Update(package);
+                graph.Packages.Insert(package);
             }
         }
         
+        protected virtual void SOPackageDetail_RowSelected(PXCache sender, PXRowSelectedEventArgs e)
+        {
+            SOPackageDetail row = e.Row as SOPackageDetail;
+            if (row != null)
+            {
+                row.WeightUOM = Setup.Current.WeightUOM;
+            }
+        }
+
+
         private sealed class DummyView : PXView
         {
             private readonly List<object> _records;

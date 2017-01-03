@@ -8,13 +8,12 @@
 	        var baseUrl = (location.href.indexOf("HideScript") > 0) ? "../../" : "../../../";
 	        var edStatus = px_alls["edStatus"];
 
-	        if ((context.command == "Confirm" || context.command == "Scan") && edStatus != null)
+	        if ((context.command == "confirm" || context.command == "confirmAll" || context.command == "scan") && edStatus != null)
 	        {
 	            if (edStatus.getValue() == "OK")
                 {
 	                var audio = new Audio(baseUrl + 'Sounds/success.wav');
 	                audio.play();
-
 	                px_alls["edShipmentNbr"].focus();
 	            }
 	            else if (edStatus.getValue() == "SCN")
@@ -33,7 +32,7 @@
 	    function Barcode_KeyDown(ctrl, e) {
 	        if (e.keyCode === 13) { //Enter key
 	            var ds = px_alls["ds"];
-	            ds.executeCallback("Scan");
+	            ds.executeCallback("scan");
 	            e.cancel = true;
 	        }
 	    }
@@ -53,7 +52,7 @@
 	<px:PXFormView ID="form" runat="server" DataSourceID="ds" Height="63px" Width="100%" Visible="true" DataMember="Document" DefaultControlID="edShipmentNbr">
         <Template>
             <px:PXLayoutRule runat="server" StartColumn="True" LabelsWidth="S" ControlSize="L" />
-			<px:PXSelector ID="edShipmentNbr" runat="server" DataField="ShipmentNbr" AutoRefresh="true" AllowEdit="true" CommitChanges="true" />
+			<px:PXSelector ID="edShipmentNbr" runat="server" DataField="ShipmentNbr" AutoRefresh="true" AllowEdit="true" CommitChanges="true" AutoComplete="false" />
             <px:PXTextEdit ID="edBarcode" runat="server" DataField="Barcode">
                 <ClientEvents KeyDown="Barcode_KeyDown" />
             </px:PXTextEdit>
@@ -81,58 +80,92 @@
     </px:PXFormView>
 </asp:content>
 <asp:content id="cont3" contentplaceholderid="phG" runat="Server">
-    <px:PXGrid ID="grid" runat="server" DataSourceID="ds" Style="height: 250px;" Width="100%" 
-        OnRowDataBound="grid_RowDataBound" SkinID="Inquire" StatusField="Availability" SyncPosition="true" Height="372px" TabIndex="-7372">
-        <Levels>
-            <px:PXGridLevel DataMember="Transactions" DataKeyNames="ShipmentNbr,LineNbr">
-                <Columns>
-                    <px:PXGridColumn DataField="Availability" Width="1px" />
-                    <px:PXGridColumn DataField="ShipmentNbr" Width="90px" />
-                    <px:PXGridColumn DataField="LineNbr" TextAlign="Right" Width="54px" />
-                    <px:PXGridColumn AllowUpdate="False" DataField="OrigOrderType" Width="36px" />
-                    <px:PXGridColumn AllowUpdate="False" DataField="OrigOrderNbr" Width="90px" />
-                    <px:PXGridColumn AllowUpdate="False" DataField="OrigLineNbr" TextAlign="Right" Width="54px" />
-                    <px:PXGridColumn DataField="InventoryID" DisplayFormat="&gt;AAAAAAAAAA" Width="81px" AutoCallBack="True" RenderEditorText="True" />
-                    <px:PXGridColumn DataField="SubItemID" DisplayFormat="&gt;AA-A" Width="45px" NullText="<SPLIT>" AutoCallBack="True" />
-                    <px:PXGridColumn AllowNull="False" DataField="IsFree" TextAlign="Center" Type="CheckBox" />
-                    <px:PXGridColumn DataField="SiteID" DisplayFormat="&gt;AAAAAAAAAA" Width="81px" AutoCallBack="True" />
-                    <px:PXGridColumn DataField="LocationID" DisplayFormat="&gt;AAAAAAAAAA" Width="81px" NullText="<SPLIT>" />
-                    <px:PXGridColumn DataField="UOM" Width="54px" AutoCallBack="True" />
-                    <px:PXGridColumn AllowNull="False" DataField="PickedQty" TextAlign="Right" Width="81px" />
-                    <px:PXGridColumn AllowNull="False" AutoCallBack="True" DataField="ShippedQty" TextAlign="Right" Width="81px" />
-                    <px:PXGridColumn AllowNull="False" DataField="OriginalShippedQty" TextAlign="Right" Width="81px" />
-                    <px:PXGridColumn AllowNull="False" DataField="OrigOrderQty" TextAlign="Right" Width="81px" />
-                    <px:PXGridColumn AllowNull="False" DataField="OpenOrderQty" TextAlign="Right" Width="81px" />
-                    <px:PXGridColumn AllowNull="False" DataField="CompleteQtyMin" TextAlign="Right" Width="81px" />
-                    <px:PXGridColumn DataField="LotSerialNbr" Width="180px" NullText="<SPLIT>" />
-                    <px:PXGridColumn DataField="ShipComplete" Width="117px" RenderEditorText="True" />
-                    <px:PXGridColumn DataField="ExpireDate" Width="90px" />
-                    <px:PXGridColumn DataField="ReasonCode" DisplayFormat="&gt;AAAAAAAAAA" Width="81px" />
-                    <px:PXGridColumn DataField="TranDesc" Width="180px" />
-                </Columns>
-            </px:PXGridLevel>
-        </Levels>
-        <ActionBar>
-            <CustomItems>
-                <px:PXToolBarButton Text="Allocations" Key="cmdLS" CommandName="Allocations" CommandSourceID="ds" DependOnGrid="grid" />
-            </CustomItems>
-        </ActionBar>
-        <AutoSize Container="Window" Enabled="True" MinHeight="400" />
-    </px:PXGrid>
+    <px:PXTab ID="tab" runat="server" Height="540px" Style="z-index: 100;" Width="100%">
+        <Items>
+            <px:PXTabItem Text="Document Details">
+                <Template>
+                    <px:PXGrid ID="grid" runat="server" DataSourceID="ds" Style="height: 250px;" Width="100%" 
+                        OnRowDataBound="grid_RowDataBound" SkinID="Inquire" StatusField="Availability" SyncPosition="true" Height="372px" TabIndex="-7372">
+                        <Levels>
+                            <px:PXGridLevel DataMember="Transactions" DataKeyNames="ShipmentNbr,LineNbr">
+                                <Columns>
+                                    <px:PXGridColumn DataField="Availability" Width="1px" />
+                                    <px:PXGridColumn DataField="ShipmentNbr" Width="90px" />
+                                    <px:PXGridColumn DataField="LineNbr" TextAlign="Right" Width="54px" />
+                                    <px:PXGridColumn AllowUpdate="False" DataField="OrigOrderType" Width="36px" />
+                                    <px:PXGridColumn AllowUpdate="False" DataField="OrigOrderNbr" Width="90px" />
+                                    <px:PXGridColumn AllowUpdate="False" DataField="OrigLineNbr" TextAlign="Right" Width="54px" />
+                                    <px:PXGridColumn DataField="InventoryID" DisplayFormat="&gt;AAAAAAAAAA" Width="81px" AutoCallBack="True" RenderEditorText="True" />
+                                    <px:PXGridColumn DataField="SubItemID" DisplayFormat="&gt;AA-A" Width="45px" NullText="<SPLIT>" AutoCallBack="True" />
+                                    <px:PXGridColumn AllowNull="False" DataField="IsFree" TextAlign="Center" Type="CheckBox" />
+                                    <px:PXGridColumn DataField="SiteID" DisplayFormat="&gt;AAAAAAAAAA" Width="81px" AutoCallBack="True" />
+                                    <px:PXGridColumn DataField="LocationID" DisplayFormat="&gt;AAAAAAAAAA" Width="81px" NullText="<SPLIT>" />
+                                    <px:PXGridColumn DataField="UOM" Width="54px" AutoCallBack="True" />
+                                    <px:PXGridColumn AllowNull="False" DataField="PickedQty" TextAlign="Right" Width="81px" />
+                                    <px:PXGridColumn AllowNull="False" AutoCallBack="True" DataField="ShippedQty" TextAlign="Right" Width="81px" />
+                                    <px:PXGridColumn AllowNull="False" DataField="OriginalShippedQty" TextAlign="Right" Width="81px" />
+                                    <px:PXGridColumn AllowNull="False" DataField="OrigOrderQty" TextAlign="Right" Width="81px" />
+                                    <px:PXGridColumn AllowNull="False" DataField="OpenOrderQty" TextAlign="Right" Width="81px" />
+                                    <px:PXGridColumn AllowNull="False" DataField="CompleteQtyMin" TextAlign="Right" Width="81px" />
+                                    <px:PXGridColumn DataField="LotSerialNbr" Width="180px" NullText="<SPLIT>" />
+                                    <px:PXGridColumn DataField="ShipComplete" Width="117px" RenderEditorText="True" />
+                                    <px:PXGridColumn DataField="ExpireDate" Width="90px" />
+                                    <px:PXGridColumn DataField="ReasonCode" DisplayFormat="&gt;AAAAAAAAAA" Width="81px" />
+                                    <px:PXGridColumn DataField="TranDesc" Width="180px" />
+                                </Columns>
+                            </px:PXGridLevel>
+                        </Levels>
+                        <ActionBar>
+                            <CustomItems>
+                                <px:PXToolBarButton Text="Allocations" Key="cmdLS" CommandName="Allocations" CommandSourceID="ds" DependOnGrid="grid" />
+                            </CustomItems>
+                        </ActionBar>
+                         <AutoSize Enabled="True" />
+                        <AutoSize Container="Window" Enabled="True" MinHeight="400" />
+                    </px:PXGrid>
+                </Template>
+            </px:PXTabItem>
+            <px:PXTabItem Text="Packages">
+                <Template>
+                    <px:PXGrid ID="gridPackages" runat="server" DataSourceID="ds" Style="z-index: 100; left: 0px; top: 0px; height: 372px;" Width="100%" SkinID="Details" BorderWidth="0px">
+                        <Levels>
+                            <px:PXGridLevel DataMember="Packages">
+                                <Columns>
+                                    <px:PXGridColumn DataField="BoxID" DisplayFormat="&gt;aaaaaaaaaaaaaaa" Label="Box ID" Width="117px" />
+                                    <px:PXGridColumn AutoGenerateOption="NotSet" DataField="Description" MaxLength="30" Width="200px" />
+									<px:PXGridColumn AllowNull="False" DataField="Weight" TextAlign="Right" Width="91px" />
+                                    <px:PXGridColumn AllowNull="False" DataField="WeightUOM" Width="91px" />
+                                    <px:PXGridColumn AllowNull="False" DataField="DeclaredValue" TextAlign="Right" Width="91px" />
+                                    <px:PXGridColumn AllowNull="False" DataField="COD" Label="C.O.D. Amount" TextAlign="Right" Width="91px" />
+                                </Columns>
+                            </px:PXGridLevel>
+                        </Levels>
+                        <AutoSize Enabled="True" MinHeight="150" />
+                    </px:PXGrid>
+                </Template>
+            </px:PXTabItem>
+        </Items>
+        <AutoSize Enabled="True" Container="Window" />
+    </px:PXTab>
     <%-- Settings --%>
     <px:PXSmartPanel ID="PanelPrintSettings" runat="server" Height="150px" Width="400px" Caption="Settings" CaptionVisible="True"
-        Key="PrintSetup" AutoCallBack-Command="Refresh" AutoCallBack-Enabled="True" AutoCallBack-Target="frmPrintSettings">
-        <px:PXFormView ID="frmPrintSettings" runat="server" DataSourceID="ds" DataMember="PrintSetup" SkinID="Transparent">
+        Key="UserSetup" AutoCallBack-Command="Refresh" AutoCallBack-Enabled="True" AutoCallBack-Target="frmPrintSettings">
+        <px:PXFormView ID="frmPrintSettings" runat="server" DataSourceID="ds" DataMember="UserSetup" SkinID="Transparent">
             <Template>
                 <px:PXLayoutRule ID="PXLayoutRule1" runat="server" LabelsWidth="M" ControlSize="M" StartGroup="True" SuppressLabel="True" GroupCaption="Shipment Confirmation"/>
                 <px:PXCheckBox ID="edShipmentConfirmation" runat="server" DataField="ShipmentConfirmation" CommitChanges="true" />
                 <px:PXLayoutRule ID="PXLayoutRule3" runat="server" LabelsWidth="M" ControlSize="M" SuppressLabel="False"/>
-                <px:PXSelector ID="edShipmentConfirmationQueue" runat="server" DataField="ShipmentConfirmationQueue" CommitChanges="true" />
+                <px:PXSelector ID="edShipmentConfirmationQueue" runat="server" DataField="ShipmentConfirmationQueue" CommitChanges="true" AutoComplete="false" />
                 
                 <px:PXLayoutRule ID="PXLayoutRule2" runat="server" LabelsWidth="M" ControlSize="M" StartGroup="True" SuppressLabel="True" GroupCaption="Shipment Labels"/>
                 <px:PXCheckBox ID="edShipmentLabels" runat="server" DataField="ShipmentLabels" CommitChanges="true" />
                 <px:PXLayoutRule ID="PXLayoutRule5" runat="server" LabelsWidth="M" ControlSize="M" SuppressLabel="False"/>
-                <px:PXSelector ID="edShipmentLabelsQueue" runat="server" DataField="ShipmentLabelsQueue" CommitChanges="true" />
+                <px:PXSelector ID="edShipmentLabelsQueue" runat="server" DataField="ShipmentLabelsQueue" CommitChanges="true" AutoComplete="false" />
+
+                <px:PXLayoutRule ID="PXLayoutRule4" runat="server" LabelsWidth="M" ControlSize="M" StartGroup="True" SuppressLabel="True" GroupCaption="Scale"/>
+                <px:PXCheckBox ID="PXCheckBox1" runat="server" DataField="UseScale" CommitChanges="true" />
+                <px:PXLayoutRule ID="PXLayoutRule6" runat="server" LabelsWidth="M" ControlSize="M" SuppressLabel="False"/>
+                <px:PXSelector ID="PXSelector1" runat="server" DataField="ScaleID" CommitChanges="true" AutoComplete="false" />
             </Template>
         </px:PXFormView>
         <px:PXPanel ID="PXPanel2" runat="server" SkinID="Buttons">
