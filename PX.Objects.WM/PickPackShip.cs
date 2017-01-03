@@ -549,11 +549,13 @@ namespace PX.Objects.SO
             {
                 if(this.UserSetup.Current.UseScale == true)
                 {
-                    //TODO: Implement this - harcoded just for testing.
-                    decimal weight = 1.25M;
-                    DateTime weightTimestamp = DateTime.Now;
+                    var scale = (SMScale)PXSelect<SMScale, Where<SMScale.scaleID, Equal<Required<SOPickPackShipUserSetup.scaleID>>>>.Select(this, this.UserSetup.Current.ScaleID);
+                    if(scale == null)
+                    {
+                        throw new PXException("Scale {0} not found in database.", this.UserSetup.Current.ScaleID);
+                    }
 
-                    if (weightTimestamp.AddSeconds(ScaleWeightValiditySeconds) < DateTime.Now)
+                    if (scale.LastModifiedDateTime.Value.AddSeconds(ScaleWeightValiditySeconds) < DateTime.Now)
                     {
                         doc.Status = ScanStatuses.Error;
                         doc.Message = String.Format("Measurement on scale {0} is more than {1} seconds old. Remove package from the scale and weigh it again.", this.UserSetup.Current.ScaleID, ScaleWeightValiditySeconds);
@@ -561,8 +563,8 @@ namespace PX.Objects.SO
                     else
                     {
                         doc.Status = ScanStatuses.Information;
-                        doc.Message = String.Format("Package is complete. Weight: {0:0.0000} {1}", weight, Setup.Current.WeightUOM);
-                        SetCurrentPackageWeight(weight);
+                        doc.Message = String.Format("Package is complete. Weight: {0:0.0000} {1}", scale.LastWeight.GetValueOrDefault(), Setup.Current.WeightUOM);
+                        SetCurrentPackageWeight(scale.LastWeight.GetValueOrDefault());
                         doc.CurrentPackageLineNbr = null;
                     }
                 }
@@ -874,8 +876,9 @@ namespace PX.Objects.SO
             var printSetup = (SOPickPackShipUserSetup)UserSetup.Select();
 
             if (printSetup.ShipmentConfirmation == true)
-            { 
-                if(jobMaint == null) jobMaint = PXGraph.CreateInstance<PrintJobMaint>();
+            {
+                //TODO: SO642000 shouldn't be hardcoded - this needs to be read from notification
+                if (jobMaint == null) jobMaint = PXGraph.CreateInstance<PrintJobMaint>();
                 AddPrintJob(jobMaint, printSetup.ShipmentConfirmationQueue, "SO642000", new Dictionary<string, string> { { "ShipmentNbr", graph.Document.Current.ShipmentNbr } });
             }
             
