@@ -62,6 +62,7 @@
     <Compile Include="Configuration.Designer.cs">
       <DependentUpon>Configuration.cs</DependentUpon>
     </Compile>
+    <Compile Include="RawPrinterHelper.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Main.cs">
       <SubType>Form</SubType>

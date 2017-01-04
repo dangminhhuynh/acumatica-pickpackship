@@ -893,13 +893,12 @@ namespace PX.Objects.SO
                     {
                         FileInfo fileInfo = ufm.GetFile(id);
                         string extension = System.IO.Path.GetExtension(fileInfo.Name).ToLower();
-                        if (extension == ".pdf")
+                        if (extension == ".pdf" || extension == ".zpl" || extension == ".zplii" || extension == ".epl" || extension == ".epl2" || extension == ".dpl")
                         {
                             AddPrintJob(jobMaint, printSetup.ShipmentLabelsQueue, "", new Dictionary<string, string> { { "FILEID", id.ToString() } });
                         }
                         else
                         {
-                            //TODO: Add support for other file types - ZPL, EPL, etc...
                             PXTrace.WriteWarning("Unsupported file extension attached to the package for Shipment {0}/{1}", graph.Document.Current.ShipmentNbr, package.LineNbr);
                         }
                     }

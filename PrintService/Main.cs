@@ -189,18 +189,52 @@ namespace PrintService
         private void ProcessJob(PrintQueue queue, string jobID, string reportID, Dictionary<string, string> parameters)
         {
             WriteToLog("Queue {0} - processing print job {1}...", queue.QueueName, jobID);
-            byte[] pdfReport = null;
+            byte[] data = null;
             if (reportID == String.Empty)
             {
-                pdfReport = GetFileID(parameters["FILEID"]);
+                data = GetFileID(parameters["FILEID"]);
             }
             else
             {
-                pdfReport = GetReportPdf(reportID, parameters);
+                data = GetReportPdf(reportID, parameters);
+            }
+            
+            if (queue.RawMode)
+            {
+                if (IsPdf(data))
+                {
+                    WriteToLog("Queue {0} - print job {1} contains a PDF file that can't be sent in raw mode...", queue.QueueName, jobID);
+                }
+                else
+                {
+                    PrintRaw(queue, data);
+                }
+            }
+            else
+            {
+                if (IsPdf(data))
+                {
+                    PrintPdf(queue, data);
+                }
+                else
+                {
+                    WriteToLog("Queue {0} - print job {1} contains a file which doesn't look like a valid PDF file...", queue.QueueName, jobID);
+                }
             }
 
-            PrintPdf(queue, pdfReport);
             DeleteJobFromQueue(jobID);
+        }
+
+        private static bool IsPdf(byte[] data)
+        {
+            //%PDF−1.0
+            return (data.Length > 4 && data[0] == 0x25 && data[1] == 0x50 && data[2] == 0x44 && data[3] == 0x46);
+        }
+        
+        private void PrintRaw(PrintQueue queue, byte[] rawData)
+        {
+            WriteToLog("Queue {0} - printing raw data to {1}...", queue.QueueName, queue.PrinterName);
+            RawPrinterHelper.SendRawBytesToPrinter(queue.PrinterName, rawData);
         }
 
         private void PrintPdf(PrintQueue queue, byte[] pdfReport)

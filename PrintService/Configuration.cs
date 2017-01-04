@@ -54,9 +54,9 @@ namespace PrintService
             queueName.Enabled = (queueList.SelectedItem != null);
             removePrintQueue.Enabled = (queueList.SelectedItem != null);
             printerCombo.Enabled = (queueList.SelectedItem != null);
-            paperSizeCombo.Enabled = (queueList.SelectedItem != null);
-            orientationGroupBox.Enabled = (queueList.SelectedItem != null);
-            paperSourceCombo.Enabled = (queueList.SelectedItem != null);
+            paperSizeCombo.Enabled = (queueList.SelectedItem != null && rawModeCheckbox.Checked == false);
+            orientationGroupBox.Enabled = (queueList.SelectedItem != null && rawModeCheckbox.Checked == false);
+            paperSourceCombo.Enabled = (queueList.SelectedItem != null && rawModeCheckbox.Checked == false);
         }
 
         private void okButton_Click(object sender, EventArgs e)
@@ -139,6 +139,7 @@ namespace PrintService
             {
                 queueName.Text = selectedItem.QueueName;
                 printerCombo.SelectedItem = selectedItem.PrinterName;
+                rawModeCheckbox.Checked = selectedItem.RawMode;
                 paperSizeCombo.SelectedValue = selectedItem.PaperSize;
                 paperSourceCombo.SelectedValue = selectedItem.PaperSource;
                 
@@ -218,7 +219,18 @@ namespace PrintService
                 selectedItem.QueueName = queueName.Text;
             }
         }
-        
+
+        private void rawModeCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+            var selectedItem = queueList.SelectedItem as PrintQueue;
+            if (selectedItem != null)
+            {
+                selectedItem.RawMode = rawModeCheckbox.Checked;
+            }
+
+            SetControlsState();
+        }
+
         private void paperSizeCombo_SelectedIndexChanged(object sender, EventArgs e)
         {
             var selectedItem = queueList.SelectedItem as PrintQueue;

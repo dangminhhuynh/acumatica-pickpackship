@@ -24,5 +24,6 @@ namespace PrintService
         public int PaperSize { get; set; }
         public int PaperSource { get; set; }
         public PrinterOrientation Orientation { get; set; }
+        public bool RawMode { get; set; }
     }
 }

@@ -54,6 +54,7 @@
             this.removePrintQueue = new System.Windows.Forms.Button();
             this.addPrintQueue = new System.Windows.Forms.Button();
             this.queueList = new System.Windows.Forms.ListBox();
+            this.rawModeCheckbox = new System.Windows.Forms.CheckBox();
             this.mainTab.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -158,6 +159,7 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.rawModeCheckbox);
             this.tabPage2.Controls.Add(this.label9);
             this.tabPage2.Controls.Add(this.label6);
             this.tabPage2.Controls.Add(this.paperSourceCombo);
@@ -181,7 +183,7 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(115, 93);
+            this.label9.Location = new System.Drawing.Point(115, 114);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(56, 13);
             this.label9.TabIndex = 21;
@@ -190,7 +192,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(115, 66);
+            this.label6.Location = new System.Drawing.Point(115, 87);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(61, 13);
             this.label6.TabIndex = 18;
@@ -201,7 +203,7 @@
             this.paperSourceCombo.DisplayMember = "SourceName";
             this.paperSourceCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.paperSourceCombo.FormattingEnabled = true;
-            this.paperSourceCombo.Location = new System.Drawing.Point(182, 90);
+            this.paperSourceCombo.Location = new System.Drawing.Point(182, 111);
             this.paperSourceCombo.Name = "paperSourceCombo";
             this.paperSourceCombo.Size = new System.Drawing.Size(156, 21);
             this.paperSourceCombo.TabIndex = 9;
@@ -213,7 +215,7 @@
             this.orientationGroupBox.Controls.Add(this.orientationLandscape);
             this.orientationGroupBox.Controls.Add(this.orientationPortrait);
             this.orientationGroupBox.Controls.Add(this.orientationDefault);
-            this.orientationGroupBox.Location = new System.Drawing.Point(118, 117);
+            this.orientationGroupBox.Location = new System.Drawing.Point(118, 138);
             this.orientationGroupBox.Name = "orientationGroupBox";
             this.orientationGroupBox.Size = new System.Drawing.Size(220, 88);
             this.orientationGroupBox.TabIndex = 10;
@@ -264,7 +266,7 @@
             this.paperSizeCombo.DisplayMember = "PaperName";
             this.paperSizeCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.paperSizeCombo.FormattingEnabled = true;
-            this.paperSizeCombo.Location = new System.Drawing.Point(182, 63);
+            this.paperSizeCombo.Location = new System.Drawing.Point(182, 84);
             this.paperSizeCombo.Name = "paperSizeCombo";
             this.paperSizeCombo.Size = new System.Drawing.Size(156, 21);
             this.paperSizeCombo.TabIndex = 8;
@@ -339,6 +341,17 @@
             this.queueList.TabIndex = 3;
             this.queueList.SelectedIndexChanged += new System.EventHandler(this.queueList_SelectedIndexChanged);
             // 
+            // rawModeCheckbox
+            // 
+            this.rawModeCheckbox.AutoSize = true;
+            this.rawModeCheckbox.Location = new System.Drawing.Point(182, 63);
+            this.rawModeCheckbox.Name = "rawModeCheckbox";
+            this.rawModeCheckbox.Size = new System.Drawing.Size(257, 17);
+            this.rawModeCheckbox.TabIndex = 22;
+            this.rawModeCheckbox.Text = "Raw Mode (for use with compatible label printers)";
+            this.rawModeCheckbox.UseVisualStyleBackColor = true;
+            this.rawModeCheckbox.CheckedChanged += new System.EventHandler(this.rawModeCheckbox_CheckedChanged);
+            // 
             // Configuration
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -393,5 +406,6 @@
         private System.Windows.Forms.RadioButton orientationLandscape;
         private System.Windows.Forms.RadioButton orientationPortrait;
         private System.Windows.Forms.RadioButton orientationDefault;
+        private System.Windows.Forms.CheckBox rawModeCheckbox;
     }
 }
