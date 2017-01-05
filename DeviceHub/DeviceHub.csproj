@@ -32,6 +32,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>App.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="HidLibrary, Version=3.2.37.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\hidlibrary.3.2.37.0\lib\HidLibrary.dll</HintPath>
@@ -66,7 +69,11 @@
     <Compile Include="Configuration.Designer.cs">
       <DependentUpon>Configuration.cs</DependentUpon>
     </Compile>
+    <Compile Include="IMonitor.cs" />
+    <Compile Include="Monitors\PrintJobMonitor.cs" />
     <Compile Include="RawPrinterHelper.cs" />
+    <Compile Include="Monitors\ScaleMonitor.cs" />
+    <Compile Include="ScaleDevice.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
@@ -153,6 +160,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Web References\ScreenApi\item.disco" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="App.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

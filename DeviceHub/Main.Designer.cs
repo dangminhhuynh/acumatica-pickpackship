@@ -53,13 +53,14 @@
             // 
             // timer
             // 
-            this.timer.Interval = global::Acumatica.DeviceHub.Properties.Settings.Default.PollingInterval;
+            this.timer.Enabled = true;
+            this.timer.Interval = 1000;
             this.timer.Tick += new System.EventHandler(this.timer_Tick);
             // 
             // notifyIcon
             // 
             this.notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
-            this.notifyIcon.Text = "Acumatica Print Service";
+            this.notifyIcon.Text = "Acumatica Device Hub";
             this.notifyIcon.Click += new System.EventHandler(this.notifyIcon_Click);
             // 
             // menuStrip1

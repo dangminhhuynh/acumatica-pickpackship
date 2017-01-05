@@ -28,7 +28,6 @@ namespace Acumatica.DeviceHub
         private void Configuration_Load(object sender, EventArgs e)
         {
             InitPrinterList();
-            InitUsbScaleList();
 
             acumaticaUrlTextBox.Text = Properties.Settings.Default.AcumaticaUrl;
             loginTextBox.Text = Properties.Settings.Default.Login;
@@ -44,8 +43,8 @@ namespace Acumatica.DeviceHub
                 _queues.ForEach(q => queueList.Items.Add(q));
             }
 
-            scalesDropDown.SelectedItem = Properties.Settings.Default.ScaleDeviceVendorId;
             acumaticaScaleIDTextBox.Text = Properties.Settings.Default.ScaleID;
+            InitUsbScaleList();
 
             SetControlsState();
         }
@@ -62,12 +61,33 @@ namespace Acumatica.DeviceHub
 
         private void InitUsbScaleList()
         {
-            var scales = new List<string>();
+            var scales = new List<ScaleDevice>();
+            scales.Add(new ScaleDevice { Description = "<Not configured>" });
             foreach(var device in HidDevices.Enumerate())
             {
-                scales.Add(device.Description);
+                scales.Add(new ScaleDevice
+                {
+                    Description = device.Description,
+                    VendorId = device.Attributes.VendorId,
+                    ProductId = device.Attributes.ProductId
+                });
             }
+
+            var currentDevice = scales.FirstOrDefault(s => s.VendorId == Properties.Settings.Default.ScaleDeviceVendorId && s.ProductId == Properties.Settings.Default.ScaleDeviceProductId);
+            if (currentDevice == null)
+            {
+                currentDevice = new ScaleDevice
+                {
+                    Description = String.Format("Unknown Device (VendorId=0x{0:X}, ProductId=0x{1:X})", Properties.Settings.Default.ScaleDeviceVendorId, Properties.Settings.Default.ScaleDeviceProductId),
+                    VendorId = Properties.Settings.Default.ScaleDeviceVendorId,
+                    ProductId = Properties.Settings.Default.ScaleDeviceProductId
+                };
+                scales.Add(currentDevice);
+            }
+
+            scalesDropDown.DisplayMember = "Description";
             scalesDropDown.DataSource = scales;
+            scalesDropDown.SelectedItem = currentDevice;
         }
 
         private void SetControlsState()
@@ -107,25 +127,31 @@ namespace Acumatica.DeviceHub
                 return;
             }
 
-            if(_queues.Count == 0)
+            if(_queues.Count == 0 && String.IsNullOrEmpty(acumaticaScaleIDTextBox.Text))
             {
-                MessageBox.Show("Please configure at least one print queue to monitor.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Please configure at least one print queue or scale to monitor.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 mainTab.SelectedIndex = 1;
                 return;
             }
-            else
+
+            if(!String.IsNullOrEmpty(acumaticaScaleIDTextBox.Text) && (scalesDropDown.SelectedItem == null || (scalesDropDown.SelectedItem as ScaleDevice).VendorId == 0))
             {
-                PrintQueue unnamedQueue = _queues.FirstOrDefault(q => q.QueueName == NewQueueName);
-                if (unnamedQueue != null)
-                {
-                    MessageBox.Show("Please give a name to this queue.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    mainTab.SelectedIndex = 1;
-                    queueList.SelectedItem = unnamedQueue;
-                    queueName.Focus();
-                    return;
-                }
+                MessageBox.Show(String.Format("Please select the device to link to Acumatica for scale ID {0}.", acumaticaScaleIDTextBox.Text), this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                mainTab.SelectedIndex = 2;
+                scalesDropDown.Focus();
+                return;
             }
-            
+
+            PrintQueue unnamedQueue = _queues.FirstOrDefault(q => q.QueueName == NewQueueName);
+            if (unnamedQueue != null)
+            {
+                MessageBox.Show("Please give a name to this queue.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                mainTab.SelectedIndex = 1;
+                queueList.SelectedItem = unnamedQueue;
+                queueName.Focus();
+                return;
+            }
+
             var screen = new ScreenApi.Screen();
             screen.Url = acumaticaUrlTextBox.Text + "/Soap/.asmx";
             try
@@ -146,6 +172,19 @@ namespace Acumatica.DeviceHub
             Properties.Settings.Default.Password = Settings.EncryptString(Settings.ToSecureString(passwordTextBox.Text));
             Properties.Settings.Default.Queues = JsonConvert.SerializeObject(_queues);
             Properties.Settings.Default.ScaleID = acumaticaScaleIDTextBox.Text;
+
+            if(scalesDropDown.SelectedItem == null)
+            {
+                Properties.Settings.Default.ScaleDeviceVendorId = 0;
+                Properties.Settings.Default.ScaleDeviceProductId = 0;
+            }
+            else
+            {
+                var s = (ScaleDevice)scalesDropDown.SelectedItem;
+                Properties.Settings.Default.ScaleDeviceVendorId = s.VendorId;
+                Properties.Settings.Default.ScaleDeviceProductId = s.ProductId;
+            }
+
             Properties.Settings.Default.Save();
             
             this.DialogResult = DialogResult.OK;
