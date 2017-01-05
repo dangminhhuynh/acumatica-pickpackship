@@ -137,10 +137,19 @@ namespace Acumatica.DeviceHub.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("500")]
-        public int ScalePollingInterval {
+        [global::System.Configuration.DefaultSettingValueAttribute("300")]
+        public int ScaleReadInterval {
             get {
-                return ((int)(this["ScalePollingInterval"]));
+                return ((int)(this["ScaleReadInterval"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.001")]
+        public decimal ScaleWeightMultiplier {
+            get {
+                return ((decimal)(this["ScaleWeightMultiplier"]));
             }
         }
     }

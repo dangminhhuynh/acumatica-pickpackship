@@ -24,7 +24,14 @@ namespace Acumatica.DeviceHub
         public Task Initialize(Progress<MonitorMessage> progress, CancellationToken cancellationToken)
         {
             _progress = progress;
-           
+            _queues = JsonConvert.DeserializeObject<IEnumerable<PrintQueue>>(Properties.Settings.Default.Queues).ToDictionary<PrintQueue, string>(q => q.QueueName);
+
+            if(_queues.Count == 0)
+            {
+                _progress.Report(new MonitorMessage("No print queues have been configured."));
+                return null;
+            }
+
             return Task.Run(() =>
             {
                 while (true)
@@ -65,7 +72,7 @@ namespace Acumatica.DeviceHub
             try
             {
                 _screen.Login(Properties.Settings.Default.Login, Settings.ToInsecureString(Settings.DecryptString(Properties.Settings.Default.Password)));
-                return InitializeQueues();
+                return VerifyQueues();
             }
             catch
             {
@@ -91,10 +98,9 @@ namespace Acumatica.DeviceHub
             }
         }
 
-        private bool InitializeQueues()
+        private bool VerifyQueues()
         {
             _progress.Report(new MonitorMessage("Initializing print queues..."));
-            _queues = JsonConvert.DeserializeObject<IEnumerable<PrintQueue>>(Properties.Settings.Default.Queues).ToDictionary<PrintQueue, string>(q => q.QueueName);
 
             var configuredQueues = GetAvailableQueuesFromAcumatica();
             foreach (var queue in _queues)
