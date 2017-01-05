@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace PrintService.Properties {
+namespace Acumatica.DeviceHub.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -70,18 +70,6 @@ namespace PrintService.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://10.211.55.13/AcumaticaDemo60/Soap/.asmx")]
-        public string PrintService_Acumatica_Screen {
-            get {
-                return ((string)(this["PrintService_Acumatica_Screen"]));
-            }
-            set {
-                this["PrintService_Acumatica_Screen"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string Queues {
             get {
@@ -89,6 +77,52 @@ namespace PrintService.Properties {
             }
             set {
                 this["Queues"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ScaleDeviceVendorId {
+            get {
+                return ((int)(this["ScaleDeviceVendorId"]));
+            }
+            set {
+                this["ScaleDeviceVendorId"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ScaleID {
+            get {
+                return ((string)(this["ScaleID"]));
+            }
+            set {
+                this["ScaleID"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ScaleDeviceProductId {
+            get {
+                return ((int)(this["ScaleDeviceProductId"]));
+            }
+            set {
+                this["ScaleDeviceProductId"] = value;
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://10.211.55.13/AcumaticaDemo60/Soap/.asmx")]
+        public string DeviceHub_ScreenApi_Screen {
+            get {
+                return ((string)(this["DeviceHub_ScreenApi_Screen"]));
             }
         }
     }

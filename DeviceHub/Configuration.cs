@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using HidLibrary;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 using System.Web.Services.Protocols;
 using System.Windows.Forms;
 
-namespace PrintService
+namespace Acumatica.DeviceHub
 {
     public partial class Configuration : Form
     {
@@ -26,17 +27,14 @@ namespace PrintService
         
         private void Configuration_Load(object sender, EventArgs e)
         {
-            var printers = new List<string>();
-            foreach(string printer in System.Drawing.Printing.PrinterSettings.InstalledPrinters)
-            {
-                printers.Add(printer);
-            }
-            printerCombo.DataSource = printers;
+            InitPrinterList();
+            InitUsbScaleList();
 
             acumaticaUrlTextBox.Text = Properties.Settings.Default.AcumaticaUrl;
             loginTextBox.Text = Properties.Settings.Default.Login;
             passwordTextBox.Text = Settings.ToInsecureString(Settings.DecryptString(Properties.Settings.Default.Password));
-            if(String.IsNullOrEmpty(Properties.Settings.Default.Queues))
+
+            if (String.IsNullOrEmpty(Properties.Settings.Default.Queues))
             {
                 _queues = new List<PrintQueue>();
             }
@@ -46,7 +44,30 @@ namespace PrintService
                 _queues.ForEach(q => queueList.Items.Add(q));
             }
 
+            scalesDropDown.SelectedItem = Properties.Settings.Default.ScaleDeviceVendorId;
+            acumaticaScaleIDTextBox.Text = Properties.Settings.Default.ScaleID;
+
             SetControlsState();
+        }
+
+        private void InitPrinterList()
+        {
+            var printers = new List<string>();
+            foreach (string printer in System.Drawing.Printing.PrinterSettings.InstalledPrinters)
+            {
+                printers.Add(printer);
+            }
+            printerCombo.DataSource = printers;
+        }
+
+        private void InitUsbScaleList()
+        {
+            var scales = new List<string>();
+            foreach(var device in HidDevices.Enumerate())
+            {
+                scales.Add(device.Description);
+            }
+            scalesDropDown.DataSource = scales;
         }
 
         private void SetControlsState()
@@ -64,7 +85,7 @@ namespace PrintService
             Uri validatedUri;
             if(!Uri.TryCreate(acumaticaUrlTextBox.Text, UriKind.Absolute, out validatedUri))
             {
-                MessageBox.Show("Pleae enter a valid URL.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Please enter a valid URL.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 mainTab.SelectedIndex = 0;
                 acumaticaUrlTextBox.Focus();
                 return;
@@ -72,7 +93,7 @@ namespace PrintService
 
             if (String.IsNullOrEmpty(loginTextBox.Text))
             {
-                MessageBox.Show("Pleae enter your login.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Please enter your login.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 mainTab.SelectedIndex = 0;
                 loginTextBox.Focus();
                 return;
@@ -80,7 +101,7 @@ namespace PrintService
 
             if (String.IsNullOrEmpty(passwordTextBox.Text))
             {
-                MessageBox.Show("Pleae enter your password.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Please enter your password.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 mainTab.SelectedIndex = 0;
                 passwordTextBox.Focus();
                 return;
@@ -105,7 +126,7 @@ namespace PrintService
                 }
             }
             
-            var screen = new PrintService.Acumatica.Screen();
+            var screen = new ScreenApi.Screen();
             screen.Url = acumaticaUrlTextBox.Text + "/Soap/.asmx";
             try
             {
@@ -124,6 +145,7 @@ namespace PrintService
             Properties.Settings.Default.Login = loginTextBox.Text;
             Properties.Settings.Default.Password = Settings.EncryptString(Settings.ToSecureString(passwordTextBox.Text));
             Properties.Settings.Default.Queues = JsonConvert.SerializeObject(_queues);
+            Properties.Settings.Default.ScaleID = acumaticaScaleIDTextBox.Text;
             Properties.Settings.Default.Save();
             
             this.DialogResult = DialogResult.OK;
@@ -177,8 +199,8 @@ namespace PrintService
 
         private void removePrintQueue_Click(object sender, EventArgs e)
         {
-            queueList.Items.Remove(queueList.SelectedItem);
             _queues.Remove((PrintQueue)queueList.SelectedItem);
+            queueList.Items.Remove(queueList.SelectedItem);
             SetControlsState();
         }
         

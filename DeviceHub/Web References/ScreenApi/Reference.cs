@@ -13,7 +13,7 @@
 // 
 #pragma warning disable 1591
 
-namespace PrintService.Acumatica {
+namespace Acumatica.DeviceHub.ScreenApi {
     using System;
     using System.Web.Services;
     using System.Diagnostics;
@@ -60,7 +60,7 @@ namespace PrintService.Acumatica {
         
         /// <remarks/>
         public Screen() {
-            this.Url = global::PrintService.Properties.Settings.Default.PrintService_Acumatica_Screen;
+            this.Url = global::Acumatica.DeviceHub.Properties.Settings.Default.DeviceHub_ScreenApi_Screen;
             if ((this.IsLocalFileSystemWebService(this.Url) == true)) {
                 this.UseDefaultCredentials = true;
                 this.useDefaultCredentialsSetExplicitly = false;

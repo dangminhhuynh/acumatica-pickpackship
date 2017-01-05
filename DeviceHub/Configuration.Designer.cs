@@ -1,4 +1,4 @@
-﻿namespace PrintService
+﻿namespace Acumatica.DeviceHub
 {
     partial class Configuration
     {
@@ -39,6 +39,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.acumaticaUrlTextBox = new System.Windows.Forms.TextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.rawModeCheckbox = new System.Windows.Forms.CheckBox();
             this.label9 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.paperSourceCombo = new System.Windows.Forms.ComboBox();
@@ -54,11 +55,16 @@
             this.removePrintQueue = new System.Windows.Forms.Button();
             this.addPrintQueue = new System.Windows.Forms.Button();
             this.queueList = new System.Windows.Forms.ListBox();
-            this.rawModeCheckbox = new System.Windows.Forms.CheckBox();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.label7 = new System.Windows.Forms.Label();
+            this.scalesDropDown = new System.Windows.Forms.ComboBox();
+            this.label8 = new System.Windows.Forms.Label();
+            this.acumaticaScaleIDTextBox = new System.Windows.Forms.TextBox();
             this.mainTab.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.orientationGroupBox.SuspendLayout();
+            this.tabPage3.SuspendLayout();
             this.SuspendLayout();
             // 
             // okButton
@@ -85,6 +91,7 @@
             // 
             this.mainTab.Controls.Add(this.tabPage1);
             this.mainTab.Controls.Add(this.tabPage2);
+            this.mainTab.Controls.Add(this.tabPage3);
             this.mainTab.Location = new System.Drawing.Point(1, 1);
             this.mainTab.Name = "mainTab";
             this.mainTab.SelectedIndex = 0;
@@ -177,8 +184,19 @@
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage2.Size = new System.Drawing.Size(499, 269);
             this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "Queues";
+            this.tabPage2.Text = "Print Queues";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // rawModeCheckbox
+            // 
+            this.rawModeCheckbox.AutoSize = true;
+            this.rawModeCheckbox.Location = new System.Drawing.Point(182, 63);
+            this.rawModeCheckbox.Name = "rawModeCheckbox";
+            this.rawModeCheckbox.Size = new System.Drawing.Size(257, 17);
+            this.rawModeCheckbox.TabIndex = 22;
+            this.rawModeCheckbox.Text = "Raw Mode (for use with compatible label printers)";
+            this.rawModeCheckbox.UseVisualStyleBackColor = true;
+            this.rawModeCheckbox.CheckedChanged += new System.EventHandler(this.rawModeCheckbox_CheckedChanged);
             // 
             // label9
             // 
@@ -341,16 +359,54 @@
             this.queueList.TabIndex = 3;
             this.queueList.SelectedIndexChanged += new System.EventHandler(this.queueList_SelectedIndexChanged);
             // 
-            // rawModeCheckbox
+            // tabPage3
             // 
-            this.rawModeCheckbox.AutoSize = true;
-            this.rawModeCheckbox.Location = new System.Drawing.Point(182, 63);
-            this.rawModeCheckbox.Name = "rawModeCheckbox";
-            this.rawModeCheckbox.Size = new System.Drawing.Size(257, 17);
-            this.rawModeCheckbox.TabIndex = 22;
-            this.rawModeCheckbox.Text = "Raw Mode (for use with compatible label printers)";
-            this.rawModeCheckbox.UseVisualStyleBackColor = true;
-            this.rawModeCheckbox.CheckedChanged += new System.EventHandler(this.rawModeCheckbox_CheckedChanged);
+            this.tabPage3.Controls.Add(this.label8);
+            this.tabPage3.Controls.Add(this.acumaticaScaleIDTextBox);
+            this.tabPage3.Controls.Add(this.label7);
+            this.tabPage3.Controls.Add(this.scalesDropDown);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage3.Size = new System.Drawing.Size(499, 269);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "Digital Scale";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(10, 35);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(44, 13);
+            this.label7.TabIndex = 17;
+            this.label7.Text = "Device:";
+            // 
+            // scalesDropDown
+            // 
+            this.scalesDropDown.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.scalesDropDown.FormattingEnabled = true;
+            this.scalesDropDown.Location = new System.Drawing.Point(77, 32);
+            this.scalesDropDown.Name = "scalesDropDown";
+            this.scalesDropDown.Size = new System.Drawing.Size(309, 21);
+            this.scalesDropDown.TabIndex = 16;
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(10, 9);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(51, 13);
+            this.label8.TabIndex = 19;
+            this.label8.Text = "Scale ID:";
+            // 
+            // acumaticaScaleIDTextBox
+            // 
+            this.acumaticaScaleIDTextBox.Location = new System.Drawing.Point(77, 6);
+            this.acumaticaScaleIDTextBox.MaxLength = 10;
+            this.acumaticaScaleIDTextBox.Name = "acumaticaScaleIDTextBox";
+            this.acumaticaScaleIDTextBox.Size = new System.Drawing.Size(156, 20);
+            this.acumaticaScaleIDTextBox.TabIndex = 18;
             // 
             // Configuration
             // 
@@ -375,6 +431,8 @@
             this.tabPage2.PerformLayout();
             this.orientationGroupBox.ResumeLayout(false);
             this.orientationGroupBox.PerformLayout();
+            this.tabPage3.ResumeLayout(false);
+            this.tabPage3.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -407,5 +465,10 @@
         private System.Windows.Forms.RadioButton orientationPortrait;
         private System.Windows.Forms.RadioButton orientationDefault;
         private System.Windows.Forms.CheckBox rawModeCheckbox;
+        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.TextBox acumaticaScaleIDTextBox;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.ComboBox scalesDropDown;
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace PrintService
+﻿namespace Acumatica.DeviceHub
 {
     partial class Main
     {
@@ -53,7 +53,7 @@
             // 
             // timer
             // 
-            this.timer.Interval = global::PrintService.Properties.Settings.Default.PollingInterval;
+            this.timer.Interval = global::Acumatica.DeviceHub.Properties.Settings.Default.PollingInterval;
             this.timer.Tick += new System.EventHandler(this.timer_Tick);
             // 
             // notifyIcon
@@ -114,7 +114,7 @@
             this.MainMenuStrip = this.menuStrip1;
             this.MaximizeBox = false;
             this.Name = "Main";
-            this.Text = "Acumatica Print Service";
+            this.Text = "Acumatica Device Hub";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Main_FormClosing);
             this.Load += new System.EventHandler(this.Main_Load);
             this.Resize += new System.EventHandler(this.Main_Resize);

@@ -7,8 +7,8 @@
     <ProjectGuid>{FFED7120-1FC7-47A1-92FD-0D9926C8F1C3}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PrintService</RootNamespace>
-    <AssemblyName>PrintService</AssemblyName>
+    <RootNamespace>Acumatica.DeviceHub</RootNamespace>
+    <AssemblyName>DeviceHub</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -33,6 +33,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="HidLibrary, Version=3.2.37.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\hidlibrary.3.2.37.0\lib\HidLibrary.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -73,7 +77,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PrintQueue.cs" />
-    <Compile Include="Web References\Acumatica\Reference.cs">
+    <Compile Include="Web References\ScreenApi\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.map</DependentUpon>
@@ -92,6 +96,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -103,23 +108,23 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <None Include="Web References\Acumatica\Command.datasource">
+    <None Include="Web References\ScreenApi\Command.datasource">
       <DependentUpon>Reference.map</DependentUpon>
     </None>
-    <None Include="Web References\Acumatica\Content.datasource">
+    <None Include="Web References\ScreenApi\Content.datasource">
       <DependentUpon>Reference.map</DependentUpon>
     </None>
-    <None Include="Web References\Acumatica\ImportResult.datasource">
+    <None Include="Web References\ScreenApi\ImportResult.datasource">
       <DependentUpon>Reference.map</DependentUpon>
     </None>
-    <None Include="Web References\Acumatica\item.wsdl" />
-    <None Include="Web References\Acumatica\LoginResult.datasource">
+    <None Include="Web References\ScreenApi\item.wsdl" />
+    <None Include="Web References\ScreenApi\LoginResult.datasource">
       <DependentUpon>Reference.map</DependentUpon>
     </None>
-    <None Include="Web References\Acumatica\ProcessResult.datasource">
+    <None Include="Web References\ScreenApi\ProcessResult.datasource">
       <DependentUpon>Reference.map</DependentUpon>
     </None>
-    <None Include="Web References\Acumatica\Reference.map">
+    <None Include="Web References\ScreenApi\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
@@ -136,18 +141,18 @@
   <ItemGroup>
     <WebReferenceUrl Include="http://10.211.55.13/AcumaticaDemo60/Soap/.asmx">
       <UrlBehavior>Dynamic</UrlBehavior>
-      <RelPath>Web References\Acumatica\</RelPath>
+      <RelPath>Web References\ScreenApi\</RelPath>
       <UpdateFromURL>http://10.211.55.13/AcumaticaDemo60/Soap/.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>
       </CachedDynamicPropName>
       <CachedAppSettingsObjectName>Settings</CachedAppSettingsObjectName>
-      <CachedSettingsPropName>PrintService_Acumatica_Screen</CachedSettingsPropName>
+      <CachedSettingsPropName>DeviceHub_ScreenApi_Screen</CachedSettingsPropName>
     </WebReferenceUrl>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Web References\Acumatica\item.disco" />
+    <None Include="Web References\ScreenApi\item.disco" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

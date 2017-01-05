@@ -7,21 +7,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using PrintService.Acumatica;
 using System.IO;
 using PdfPrintingNet;
 using System.Net.Http;
 using Newtonsoft.Json;
 using System.Drawing.Printing;
 using System.Threading;
+using Acumatica.DeviceHub.ScreenApi;
 
-namespace PrintService
+namespace Acumatica.DeviceHub
 {
     public partial class Main : Form
     {
         private const string PrintJobsScreen = "SM206500";
         private const string PrintQueuesScreen = "SM206510";
-        private PrintService.Acumatica.Screen _screen;
+        private ScreenApi.Screen _screen;
         private Dictionary<string, PrintQueue> _queues;
 
         private bool _processing = false;
@@ -70,7 +70,7 @@ namespace PrintService
         private void LoginToAcumaticaAndStartMonitoringQueues()
         {
             WriteToLog("Logging in to {0}...", Properties.Settings.Default.AcumaticaUrl);
-            _screen = new PrintService.Acumatica.Screen();
+            _screen = new ScreenApi.Screen();
             _screen.Url = Properties.Settings.Default.AcumaticaUrl + "/Soap/.asmx";
             _screen.CookieContainer = new System.Net.CookieContainer();
 
@@ -335,9 +335,9 @@ namespace PrintService
             var commands = new Command[]
             {
                 new Key { ObjectName = "Job", FieldName = "JobID", Value = "=[Job.JobID]" },
-                new PrintService.Acumatica.Action { FieldName = "Cancel", ObjectName = "Job" },
+                new ScreenApi.Action { FieldName = "Cancel", ObjectName = "Job" },
                 new Value { Value = jobID, ObjectName = "Job", FieldName = "JobID", Commit = true },
-                new PrintService.Acumatica.Action { FieldName = "Delete", ObjectName = "Job" }
+                new ScreenApi.Action { FieldName = "Delete", ObjectName = "Job" }
             };
 
             var result = _screen.Submit(PrintJobsScreen, commands);

@@ -5,7 +5,7 @@ using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.IO;
 
-namespace PrintService
+namespace Acumatica.DeviceHub
 {
     //Adaped from http://support.microsoft.com/kb/322091/en-us
     public class RawPrinterHelper
