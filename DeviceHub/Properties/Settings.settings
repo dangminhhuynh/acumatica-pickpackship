@@ -8,7 +8,7 @@
     <Setting Name="Password" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="PollingInterval" Type="System.Int32" Scope="Application">
+    <Setting Name="PrinterPollingInterval" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">1000</Value>
     </Setting>
     <Setting Name="AcumaticaUrl" Type="System.String" Scope="User">
@@ -28,6 +28,12 @@
     </Setting>
     <Setting Name="DeviceHub_ScreenApi_Screen" Type="(Web Service URL)" Scope="Application">
       <Value Profile="(Default)">http://10.211.55.13/AcumaticaDemo60/Soap/.asmx</Value>
+    </Setting>
+    <Setting Name="ErrorWaitInterval" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">5000</Value>
+    </Setting>
+    <Setting Name="ScalePollingInterval" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">500</Value>
     </Setting>
   </Settings>
 </SettingsFile>

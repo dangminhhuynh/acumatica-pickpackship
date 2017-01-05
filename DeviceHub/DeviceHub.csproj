@@ -70,6 +70,7 @@
       <DependentUpon>Configuration.cs</DependentUpon>
     </Compile>
     <Compile Include="IMonitor.cs" />
+    <Compile Include="MonitorMessage.cs" />
     <Compile Include="Monitors\PrintJobMonitor.cs" />
     <Compile Include="RawPrinterHelper.cs" />
     <Compile Include="Monitors\ScaleMonitor.cs" />
@@ -163,6 +164,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="App.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AppRed.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

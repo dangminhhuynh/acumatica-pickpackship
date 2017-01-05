@@ -14,18 +14,50 @@ namespace Acumatica.DeviceHub
 {
     class PrintJobMonitor : IMonitor
     {
-        private IProgress<string> _progress;
+        private IProgress<MonitorMessage> _progress;
 
         private const string PrintJobsScreen = "SM206500";
         private const string PrintQueuesScreen = "SM206510";
         private ScreenApi.Screen _screen;
         private Dictionary<string, PrintQueue> _queues;
 
-        public Task Initialize(Progress<string> progress, CancellationToken cancellationToken)
+        public Task Initialize(Progress<MonitorMessage> progress, CancellationToken cancellationToken)
         {
             _progress = progress;
-            
-            _progress.Report(String.Format("Logging in to {0}...", Properties.Settings.Default.AcumaticaUrl));
+           
+            return Task.Run(() =>
+            {
+                while (true)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        LogoutFromAcumatica();
+                        break;
+                    }
+
+                    try
+                    { 
+                        if(_screen != null || LoginToAcumatica())
+                        { 
+                            PollPrintJobs();
+                        }
+
+                        System.Threading.Thread.Sleep(Properties.Settings.Default.PrinterPollingInterval);
+                    }
+                    catch(Exception ex)
+                    {
+                        // Assume the server went offline or our session got lost - new login will be attempted in next iteration
+                        _progress.Report(new MonitorMessage(String.Format("An error occured while polling the print queue: {0}", ex.Message), MonitorMessage.MonitorStates.Error));
+                        _screen = null;
+                        System.Threading.Thread.Sleep(Properties.Settings.Default.ErrorWaitInterval);
+                    }
+                }
+            });
+        }
+        
+        private bool LoginToAcumatica()
+        {
+            _progress.Report(new MonitorMessage(String.Format("Logging in to {0}...", Properties.Settings.Default.AcumaticaUrl), MonitorMessage.MonitorStates.Undefined));
             _screen = new ScreenApi.Screen();
             _screen.Url = Properties.Settings.Default.AcumaticaUrl + "/Soap/.asmx";
             _screen.CookieContainer = new System.Net.CookieContainer();
@@ -33,41 +65,35 @@ namespace Acumatica.DeviceHub
             try
             {
                 _screen.Login(Properties.Settings.Default.Login, Settings.ToInsecureString(Settings.DecryptString(Properties.Settings.Default.Password)));
+                return InitializeQueues();
             }
-            catch (Exception ex)
+            catch
             {
-                _progress.Report(String.Format("Login failed. Please verify configuration. Error: {0}", ex.Message));
                 _screen = null;
-                return null;
-            }
-
-            if (InitializeQueues())
-            {
-                return Task.Run(() =>
-                {
-                    while (true)
-                    {
-                        if (cancellationToken.IsCancellationRequested)
-                        {
-                            _progress.Report("Logging out...");
-                            _screen.Logout();
-                            _screen = null;
-                            break;
-                        }
-                        PollPrintJobs();
-                        System.Threading.Thread.Sleep(Properties.Settings.Default.PollingInterval);
-                    }
-                });
-            }
-            else
-            {
-                return null;
+                throw;
             }
         }
-        
+
+        private void LogoutFromAcumatica()
+        {
+            _progress.Report(new MonitorMessage("Logging out..."));
+            if (_screen != null)
+            {
+                try
+                {
+                    _screen.Logout();
+                }
+                catch
+                {
+                    //Ignore all errors in logout.
+                }
+                _screen = null;
+            }
+        }
+
         private bool InitializeQueues()
         {
-            _progress.Report("Initializing print queues...");
+            _progress.Report(new MonitorMessage("Initializing print queues..."));
             _queues = JsonConvert.DeserializeObject<IEnumerable<PrintQueue>>(Properties.Settings.Default.Queues).ToDictionary<PrintQueue, string>(q => q.QueueName);
 
             var configuredQueues = GetAvailableQueuesFromAcumatica();
@@ -75,11 +101,11 @@ namespace Acumatica.DeviceHub
             {
                 if (configuredQueues.Contains(queue.Key))
                 {
-                    _progress.Report(String.Format("Print Queue {0} initialized.", queue.Key));
+                    _progress.Report(new MonitorMessage(String.Format("Print Queue {0} initialized.", queue.Key)));
                 }
                 else
                 {
-                    _progress.Report(String.Format("Print Queue {0} is not configured on this Acumatica instance. Please check configuration.", queue.Key));
+                    _progress.Report(new MonitorMessage(String.Format("Print Queue {0} is not configured on this Acumatica instance. Please check configuration.", queue.Key)));
                     return false;
                 }
             }
@@ -107,7 +133,7 @@ namespace Acumatica.DeviceHub
         
         private void PollPrintJobs()
         {
-            _progress.Report("Polling for new print jobs...");
+            _progress.Report(new MonitorMessage("Polling for new print jobs..."));
             var commands = new Command[]
             {
                 new Field { FieldName = "JobID", ObjectName = "Job" },
@@ -131,6 +157,15 @@ namespace Acumatica.DeviceHub
             string queueName = null;
             Dictionary<string, string> parameters = null;
 
+            if(results.Length == 0)
+            {
+                _progress.Report(new MonitorMessage("Queue is empty.", MonitorMessage.MonitorStates.Ok));
+            }
+            else
+            {
+                _progress.Report(new MonitorMessage("Processing print jobs in queue...", MonitorMessage.MonitorStates.Ok));
+            }
+
             for (int i = 0; i < results.Length; i++)
             {
                 if (results[i][0] != currentJobID)
@@ -152,7 +187,7 @@ namespace Acumatica.DeviceHub
 
         private void ProcessJob(PrintQueue queue, string jobID, string reportID, Dictionary<string, string> parameters)
         {
-            _progress.Report(String.Format("Queue {0} - processing print job {1}...", queue.QueueName, jobID));
+            _progress.Report(new MonitorMessage(String.Format("Queue {0} - processing print job {1}...", queue.QueueName, jobID)));
             byte[] data = null;
             if (reportID == String.Empty)
             {
@@ -167,7 +202,7 @@ namespace Acumatica.DeviceHub
             {
                 if (IsPdf(data))
                 {
-                    _progress.Report(String.Format("Queue {0} - print job {1} contains a PDF file that can't be sent in raw mode...", queue.QueueName, jobID));
+                    _progress.Report(new MonitorMessage(String.Format("Queue {0} - print job {1} contains a PDF file that can't be sent in raw mode...", queue.QueueName, jobID), MonitorMessage.MonitorStates.Warning));
                 }
                 else
                 {
@@ -182,7 +217,7 @@ namespace Acumatica.DeviceHub
                 }
                 else
                 {
-                    _progress.Report(String.Format("Queue {0} - print job {1} contains a file which doesn't look like a valid PDF file...", queue.QueueName, jobID));
+                    _progress.Report(new MonitorMessage(String.Format("Queue {0} - print job {1} contains a file which doesn't look like a valid PDF file...", queue.QueueName, jobID), MonitorMessage.MonitorStates.Warning));
                 }
             }
 
@@ -197,13 +232,13 @@ namespace Acumatica.DeviceHub
 
         private void PrintRaw(PrintQueue queue, byte[] rawData)
         {
-            _progress.Report(String.Format("Queue {0} - printing raw data to {1}...", queue.QueueName, queue.PrinterName));
+            _progress.Report(new MonitorMessage(String.Format("Queue {0} - printing raw data to {1}...", queue.QueueName, queue.PrinterName)));
             RawPrinterHelper.SendRawBytesToPrinter(queue.PrinterName, rawData);
         }
 
         private void PrintPdf(PrintQueue queue, byte[] pdfReport)
         {
-            _progress.Report(String.Format("Queue {0} - printing PDF to {1}...", queue.QueueName, queue.PrinterName));
+            _progress.Report(new MonitorMessage(String.Format("Queue {0} - printing PDF to {1}...", queue.QueueName, queue.PrinterName)));
             var pdfPrint = new PdfPrint("demoCompany", "demoKey");
             pdfPrint.PrinterName = queue.PrinterName;
 
@@ -226,7 +261,7 @@ namespace Acumatica.DeviceHub
 
                 if (!paperSizeSet)
                 {
-                    _progress.Report(String.Format("Paper Size {0} not found for printer {1}. Please verify configuration.", queue.PrinterName, queue.PaperSize));
+                    _progress.Report(new MonitorMessage(String.Format("Paper Size {0} not found for printer {1}. Please verify configuration.", queue.PrinterName, queue.PaperSize), MonitorMessage.MonitorStates.Warning));
                 }
             }
 
@@ -245,7 +280,7 @@ namespace Acumatica.DeviceHub
 
                 if (!paperSourceSet)
                 {
-                    _progress.Report(String.Format("Paper Source {0} not found for printer {1}. Please verify configuration.", queue.PrinterName, queue.PaperSource));
+                    _progress.Report(new MonitorMessage(String.Format("Paper Source {0} not found for printer {1}. Please verify configuration.", queue.PrinterName, queue.PaperSource), MonitorMessage.MonitorStates.Warning));
                 }
             }
 
@@ -295,7 +330,7 @@ namespace Acumatica.DeviceHub
 
         private void DeleteJobFromQueue(string jobID)
         {
-            _progress.Report(String.Format("Deleting job {0} from queue...", jobID));
+            _progress.Report(new MonitorMessage(String.Format("Deleting job {0} from queue...", jobID)));
             var commands = new Command[]
             {
                 new Key { ObjectName = "Job", FieldName = "JobID", Value = "=[Job.JobID]" },

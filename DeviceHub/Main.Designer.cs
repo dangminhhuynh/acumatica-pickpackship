@@ -31,7 +31,6 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
             this.logListBox = new System.Windows.Forms.ListBox();
-            this.timer = new System.Windows.Forms.Timer(this.components);
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -50,12 +49,6 @@
             this.logListBox.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.logListBox.Size = new System.Drawing.Size(616, 271);
             this.logListBox.TabIndex = 0;
-            // 
-            // timer
-            // 
-            this.timer.Enabled = true;
-            this.timer.Interval = 1000;
-            this.timer.Tick += new System.EventHandler(this.timer_Tick);
             // 
             // notifyIcon
             // 
@@ -127,7 +120,6 @@
         }
 
         #endregion
-        private System.Windows.Forms.Timer timer;
         private System.Windows.Forms.ListBox logListBox;
         private System.Windows.Forms.NotifyIcon notifyIcon;
         private System.Windows.Forms.MenuStrip menuStrip1;

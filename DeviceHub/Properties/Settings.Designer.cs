@@ -50,9 +50,9 @@ namespace Acumatica.DeviceHub.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("1000")]
-        public int PollingInterval {
+        public int PrinterPollingInterval {
             get {
-                return ((int)(this["PollingInterval"]));
+                return ((int)(this["PrinterPollingInterval"]));
             }
         }
         
@@ -123,6 +123,24 @@ namespace Acumatica.DeviceHub.Properties {
         public string DeviceHub_ScreenApi_Screen {
             get {
                 return ((string)(this["DeviceHub_ScreenApi_Screen"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5000")]
+        public int ErrorWaitInterval {
+            get {
+                return ((int)(this["ErrorWaitInterval"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("500")]
+        public int ScalePollingInterval {
+            get {
+                return ((int)(this["ScalePollingInterval"]));
             }
         }
     }

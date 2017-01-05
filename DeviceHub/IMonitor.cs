@@ -9,6 +9,6 @@ namespace Acumatica.DeviceHub
 {
     interface IMonitor
     {
-        Task Initialize(Progress<string> progress, CancellationToken cancellationToken);
+        Task Initialize(Progress<MonitorMessage> progress, CancellationToken cancellationToken);
     }
 }
