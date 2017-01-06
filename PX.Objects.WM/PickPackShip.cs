@@ -157,12 +157,12 @@ namespace PX.Objects.SO
             if (this.Shipment.Current != null)
             {
                 doc.Status = ScanStatuses.Scan;
-                doc.Message = String.Format("Shipment {0} loaded and ready to pick.", doc.ShipmentNbr);
+                doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.ShipmentReady, doc.ShipmentNbr);
             }
             else
             {
                 doc.Status = ScanStatuses.Error;
-                doc.Message = String.Format("Shipment {0} not found.", doc.ShipmentNbr);
+                doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.ShipmentNbrMissing, doc.ShipmentNbr);
             }
 
             this.Document.Update(doc);
@@ -210,7 +210,7 @@ namespace PX.Objects.SO
             if (String.IsNullOrEmpty(doc.Barcode))
             {
                 doc.Status = ScanStatuses.Error;
-                doc.Message = "Please scan a barcode.";
+                doc.Message = WM.Messages.BarcodePrompt;
             }
             else
             {
@@ -247,7 +247,7 @@ namespace PX.Objects.SO
             {
                 doc.Quantity = quantity;
                 doc.Status = ScanStatuses.Information;
-                doc.Message = String.Format("Quantity set to {0}.", quantity);
+                doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.CommandSetQuantity, quantity);
 
                 if(commands.Length > 2)
                 {
@@ -261,22 +261,22 @@ namespace PX.Objects.SO
                     case ScanCommands.Add:
                         this.Document.Current.ScanMode = ScanModes.Add;
                         doc.Status = ScanStatuses.Information;
-                        doc.Message = "Add mode set."; //TODO: Think of a better message.
+                        doc.Message = WM.Messages.CommandAdd; //TODO: Think of a better message.
                         break;
                     case ScanCommands.Remove:
                         this.Document.Current.ScanMode = ScanModes.Remove;
                         doc.Status = ScanStatuses.Information;
-                        doc.Message = "Remove mode set.";  //TODO: Think of a better message.
+                        doc.Message = WM.Messages.CommandRemove;  //TODO: Think of a better message.
                         break;
                     case ScanCommands.Item:
                         this.Document.Current.LotSerialSearch = false;
                         doc.Status = ScanStatuses.Information;
-                        doc.Message = "Ready to search by item barcode.";
+                        doc.Message = WM.Messages.CommandInventory;
                         break;
                     case ScanCommands.LotSerial:
                         this.Document.Current.LotSerialSearch = true;
                         doc.Status = ScanStatuses.Information;
-                        doc.Message = "Ready to search by lot/serial number.";
+                        doc.Message = WM.Messages.CommandLot;
                         break;
                     case ScanCommands.Confirm:
                         this.Confirm.Press();
@@ -287,7 +287,7 @@ namespace PX.Objects.SO
                     case ScanCommands.Clear:
                         ClearScreen();
                         doc.Status = ScanStatuses.Success;
-                        doc.Message = "Screen cleared.";
+                        doc.Message = WM.Messages.CommandClear;
                         break;
                     case ScanCommands.NewPackage:
                         ProcessNewPackageCommand(commands);
@@ -297,7 +297,7 @@ namespace PX.Objects.SO
                         break;
                     default:
                         doc.Status = ScanStatuses.Error;
-                        doc.Message = "Unknown command.";
+                        doc.Message = WM.Messages.CommandUnknown;
                         break;
                 }
             }
@@ -311,7 +311,7 @@ namespace PX.Objects.SO
             if(decimal.TryParse(barcode, out weight) && weight >= 0)
             {
                 doc.Status = ScanStatuses.Information;
-                doc.Message = String.Format("Package is complete. Weight: {0:0.0000} {1}", weight, Setup.Current.WeightUOM);
+                doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.PackageComplete, weight, Setup.Current.WeightUOM);
                 SetCurrentPackageWeight(weight);
                 doc.CurrentPackageLineNbr = null;
                 doc.ScanMode = ScanModes.Add;
@@ -319,7 +319,7 @@ namespace PX.Objects.SO
             else
             {
                 doc.Status = ScanStatuses.Error;
-                doc.Message = String.Format("{0} is not a valid weight.", barcode);
+                doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.PackageInvalidWeight, barcode);
             }
         }
 
@@ -343,7 +343,7 @@ namespace PX.Objects.SO
                 if (!SetCurrentInventoryIDForLotSerial(barcode))
                 {
                     doc.Status = ScanStatuses.Error;
-                    doc.Message = String.Format("Lot/serial {0} not found in database.", barcode);
+                    doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.LotMissing, barcode);
                     return;
                 }
             }
@@ -379,7 +379,7 @@ namespace PX.Objects.SO
             if (rec == null)
             {
                 doc.Status = ScanStatuses.Error;
-                doc.Message = String.Format("Barcode {0} not found in database.", barcode);
+                doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.BarcodeMissing, barcode);
             }
             else
             {
@@ -394,33 +394,33 @@ namespace PX.Objects.SO
                     if (lsclass.LotSerAssign == INLotSerAssign.WhenUsed && lsclass.LotSerTrackExpiration == true)
                     {
                         //TODO: Implement support for this.
-                        throw new NotImplementedException("Lot/serial numbers that are assigned when used and which require tracking of expiration date are not supported with this tool.");
+                        throw new NotImplementedException(WM.Messages.LotNotSupported);
                     }
 
                     doc.CurrentInventoryID = inventoryItem.InventoryID;
                     doc.CurrentSubID = sub.SubItemID;
                     doc.Status = ScanStatuses.Scan;
-                    doc.Message = String.Format("Please scan lot/serial number for item {0}.", inventoryItem.InventoryCD.TrimEnd());
+                    doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.LotScanPrompt, inventoryItem.InventoryCD.TrimEnd());
                 }
                 else
                 {
                     if (Document.Current.ScanMode == ScanModes.Add && AddPick(inventoryItem.InventoryID, sub.SubItemID, Document.Current.Quantity, null))
                     {
                         doc.Status = ScanStatuses.Scan;
-                        doc.Message = String.Format("Added {0} x {1}.", Document.Current.Quantity, inventoryItem.InventoryCD.TrimEnd());
+                        doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.InventoryAdded, Document.Current.Quantity, inventoryItem.InventoryCD.TrimEnd());
                         doc.Quantity = 1;
                     }
                     else if (Document.Current.ScanMode == ScanModes.Remove && RemovePick(inventoryItem.InventoryID, sub.SubItemID, Document.Current.Quantity, null))
                     {
                         doc.Status = ScanStatuses.Scan;
-                        doc.Message = String.Format("Removed {0} x {1}.", Document.Current.Quantity, inventoryItem.InventoryCD.TrimEnd());
+                        doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.InventoryRemoved, Document.Current.Quantity, inventoryItem.InventoryCD.TrimEnd());
                         doc.Quantity = 1;
                         doc.ScanMode = ScanModes.Add;
                     }
                     else
                     {
                         doc.Status = ScanStatuses.Error;
-                        doc.Message = String.Format("Item {0} not found on shipment.", inventoryItem.InventoryCD.TrimEnd());
+                        doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.InventoryMissing, inventoryItem.InventoryCD.TrimEnd());
                     }
                 }
             }
@@ -445,23 +445,23 @@ namespace PX.Objects.SO
                     if(lsclass.LotSerTrack == INLotSerTrack.SerialNumbered && doc.Quantity > 1)
                     {
                         doc.Status = ScanStatuses.Error;
-                        doc.Message = "Quantity for serial numbered items must be 1.";
+                        doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.SerialInvalidQuantity);
                     }
                     else if (lsclass.LotSerTrack == INLotSerTrack.SerialNumbered && GetTotalQuantityPickedForLotSerial(doc.CurrentInventoryID, doc.CurrentSubID, barcode) > 0)
                     {
                         doc.Status = ScanStatuses.Error;
-                        doc.Message = String.Format("Serial {0} has already been picked.", barcode);
+                        doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.SerialDuplicateError, barcode);
                     }
                     else if (AddPick(doc.CurrentInventoryID, doc.CurrentSubID, Document.Current.Quantity, barcode))
                     {
                         doc.Status = ScanStatuses.Scan;
-                        doc.Message = String.Format("Added {0} x {1} ({2}).", Document.Current.Quantity, inventoryItem.InventoryCD.TrimEnd(), barcode);
+                        doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.InventoryAddedWithBarcode, Document.Current.Quantity, inventoryItem.InventoryCD.TrimEnd(), barcode);
                         doc.Quantity = 1;
                     }
                     else
                     {
                         doc.Status = ScanStatuses.Error;
-                        doc.Message = String.Format("Item {0} not found on shipment.", inventoryItem.InventoryCD.TrimEnd());
+                        doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.InventoryMissing, inventoryItem.InventoryCD.TrimEnd());
                     }
                 }
                 else if (Document.Current.ScanMode == ScanModes.Remove)
@@ -469,12 +469,12 @@ namespace PX.Objects.SO
                     if (GetTotalQuantityPickedForLotSerial(doc.CurrentInventoryID, doc.CurrentSubID, barcode) < doc.Quantity)
                     {
                         doc.Status = ScanStatuses.Error;
-                        doc.Message = String.Format("Lot/serial {0} not found in sufficient quantity on shipment.", barcode);
+                        doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.LotInvalidQuantity, barcode);
                     }
                     else if (RemovePick(doc.CurrentInventoryID, doc.CurrentSubID, Document.Current.Quantity, barcode))
                     {
                         doc.Status = ScanStatuses.Scan;
-                        doc.Message = String.Format("Removed {0} x {1} ({2}).", Document.Current.Quantity, inventoryItem.InventoryCD.TrimEnd(), barcode);
+                        doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.InventoryRemovedWithBarcode, Document.Current.Quantity, inventoryItem.InventoryCD.TrimEnd(), barcode);
                         doc.Quantity = 1;
                         doc.ScanMode = ScanModes.Add;
                     }
@@ -483,14 +483,14 @@ namespace PX.Objects.SO
                         // We will technically never hit this code, since we pre-validate how much was been picked before calling RemovePick.
                         System.Diagnostics.Debug.Assert(false, "This condition should have been validated by GetTotalQuantityPickedForLotSerial");
                         doc.Status = ScanStatuses.Error;
-                        doc.Message = String.Format("Item {0} not found on shipment.", inventoryItem.InventoryCD.TrimEnd());
+                        doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.InventoryMissing, inventoryItem.InventoryCD.TrimEnd());
                     }
                 }
             }
             else
             {
                 doc.Status = ScanStatuses.Error;
-                doc.Message = String.Format("InventoryID {0} not found in database.", doc.CurrentInventoryID);
+                doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.InventoryMissing, doc.CurrentInventoryID);
             }
 
             doc.CurrentInventoryID = null;
@@ -506,14 +506,14 @@ namespace PX.Objects.SO
             {
                 //We're expecting something that looks like *P*LARGE
                 doc.Status = ScanStatuses.Error;
-                doc.Message = String.Format("The New Package command must be followed by a Box ID.");
+                doc.Message = WM.Messages.PackageCommandMissingBoxId;
                 return;
             }
 
             if(doc.CurrentPackageLineNbr != null)
             {
                 doc.Status = ScanStatuses.Error;
-                doc.Message = String.Format("Please complete the current package using the {0}{1} command.", ScanCommands.CommandChar, ScanCommands.PackageComplete);
+                doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.PackageIncompleteError, ScanCommands.CommandChar, ScanCommands.PackageComplete);
                 return;
             }
 
@@ -522,7 +522,7 @@ namespace PX.Objects.SO
             if(box == null)
             {
                 doc.Status = ScanStatuses.Error;
-                doc.Message = String.Format("Box {0} cannot be found in the system.", boxID);
+                doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.BoxMissing, boxID);
             }
             else
             {
@@ -532,7 +532,7 @@ namespace PX.Objects.SO
 
                 doc.CurrentPackageLineNbr = newPackage.LineNbr;
                 doc.Status = ScanStatuses.Information;
-                doc.Message = String.Format("Box {0} added to the shipment. Ready to pick items.", boxID);
+                doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.BoxAdded, boxID);
             }
         }
 
@@ -543,7 +543,7 @@ namespace PX.Objects.SO
             if (doc.CurrentPackageLineNbr == null)
             {
                 doc.Status = ScanStatuses.Error;
-                doc.Message = "There is no package currently selected or in process.";
+                doc.Message = WM.Messages.PackageMissingCurrent;
             }
             else
             {
@@ -552,18 +552,18 @@ namespace PX.Objects.SO
                     var scale = (SMScale)PXSelect<SMScale, Where<SMScale.scaleID, Equal<Required<SOPickPackShipUserSetup.scaleID>>>>.Select(this, this.UserSetup.Current.ScaleID);
                     if(scale == null)
                     {
-                        throw new PXException("Scale {0} not found in database.", this.UserSetup.Current.ScaleID);
+                        throw new PXException(PXMessages.LocalizeFormatNoPrefix(WM.Messages.ScaleMissing, this.UserSetup.Current.ScaleID));
                     }
 
                     if (scale.LastModifiedDateTime.Value.AddSeconds(ScaleWeightValiditySeconds) < DateTime.Now)
                     {
                         doc.Status = ScanStatuses.Error;
-                        doc.Message = String.Format("Measurement on scale {0} is more than {1} seconds old. Remove package from the scale and weigh it again.", this.UserSetup.Current.ScaleID, ScaleWeightValiditySeconds);
+                        doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.ScaleTimeout, this.UserSetup.Current.ScaleID, ScaleWeightValiditySeconds);
                     }
                     else
                     {
                         doc.Status = ScanStatuses.Information;
-                        doc.Message = String.Format("Package is complete. Weight: {0:0.0000} {1}", scale.LastWeight.GetValueOrDefault(), Setup.Current.WeightUOM);
+                        doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.PackageComplete, scale.LastWeight.GetValueOrDefault(), Setup.Current.WeightUOM);
                         SetCurrentPackageWeight(scale.LastWeight.GetValueOrDefault());
                         doc.CurrentPackageLineNbr = null;
                     }
@@ -571,7 +571,7 @@ namespace PX.Objects.SO
                 else
                 {
                     doc.Status = ScanStatuses.Information;
-                    doc.Message = "Please enter the total weight of this package and press enter.";
+                    doc.Message = WM.Messages.PackageWeightPrompt;
                     doc.ScanMode = ScanModes.Weight;
                 }
             }
@@ -582,7 +582,7 @@ namespace PX.Objects.SO
             var package = (SOPackageDetail) this.Packages.Search<SOPackageDetail.lineNbr>(this.Document.Current.CurrentPackageLineNbr);
             if(this.Packages.Current == null)
             {
-                throw new PXException("Unable to find package line {0} - was it deleted manually?", this.Document.Current.CurrentPackageLineNbr);
+                throw new PXException(PXMessages.LocalizeFormatNoPrefix(WM.Messages.PackageLineNbrMissing, this.Document.Current.CurrentPackageLineNbr));
             }
             package.Weight = weight;
             this.Packages.Update(package);
@@ -604,7 +604,7 @@ namespace PX.Objects.SO
                 }
                 else
                 {
-                    throw new PXException("More than one lot/serial entry was found. This is not yet supported, please search by Inventory ID.");
+                    throw new PXException(WM.Messages.LotUniquenessError);
                 }
             }
 
@@ -749,7 +749,7 @@ namespace PX.Objects.SO
                 {
                     if (split.Qty != 1)
                     {
-                        throw new PXException("Unexpected split quantity for lot/serial {0} (Quantity: {1}).", lotSerial, split.Qty);
+                        throw new PXException(PXMessages.LocalizeFormatNoPrefix(WM.Messages.LotSplitQuantityError, lotSerial, split.Qty));
                     }
 
                     this.Splits.Delete(split);
@@ -762,7 +762,7 @@ namespace PX.Objects.SO
             if(quantity != 0)
             {
                 // This condition is validated in RemovePick, so we should never get to this point.
-                throw new PXException("The system was not able to locate lot/serial number {0} (Quantity: {1}). Please check the shipment.", lotSerial, quantity);
+                throw new PXException(PXMessages.LocalizeFormatNoPrefix(WM.Messages.LotMissingWithQuantity, lotSerial, quantity));
             }
         }
 
@@ -793,7 +793,7 @@ namespace PX.Objects.SO
             if(doc.CurrentPackageLineNbr != null)
             {
                 doc.Status = ScanStatuses.Error;
-                doc.Message = String.Format("Please complete the current package using the {0}{1} command.", ScanCommands.CommandChar, ScanCommands.PackageComplete);
+                doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.PackageCompletePrompt, ScanCommands.CommandChar, ScanCommands.PackageComplete);
                 this.Document.Update(doc);
                 return;
             }
@@ -802,13 +802,13 @@ namespace PX.Objects.SO
             if (shipment == null)
             {
                 doc.Status = ScanStatuses.Error;
-                doc.Message = "Shipment not found.";
+                doc.Message = WM.Messages.ShipmentMissing;
                 this.Document.Update(doc);
                 return;
             }
 
             if (confirmMode == ConfirmMode.AllItems || !IsConfirmationNeeded() ||
-                this.Document.Ask("The quantity picked for one or more lines doesn't match with the shipment. Do you want to continue?", MessageButtons.YesNo) == PX.Data.WebDialogResult.Yes)
+                this.Document.Ask(WM.Messages.ShipmentQuantityMismatchPrompt, MessageButtons.YesNo) == PX.Data.WebDialogResult.Yes)
             {
                 PXLongOperation.StartOperation(this, () =>
                 {
@@ -833,11 +833,11 @@ namespace PX.Objects.SO
                         doc.Status = ScanStatuses.Success;
                         if(confirmMode == ConfirmMode.AllItems)
                         { 
-                            doc.Message = String.Format("Shipment {0} confirmed in full.", doc.ShipmentNbr);
+                            doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.ShipmentConfirmedFull, doc.ShipmentNbr);
                         }
                         else if(confirmMode == ConfirmMode.PickedItems)
                         {
-                            doc.Message = String.Format("Shipment {0} confirmed as picked.", doc.ShipmentNbr);
+                            doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.ShipmentConfirmedPicked, doc.ShipmentNbr);
                         }
                         else
                         {
@@ -899,7 +899,7 @@ namespace PX.Objects.SO
                         }
                         else
                         {
-                            PXTrace.WriteWarning("Unsupported file extension attached to the package for Shipment {0}/{1}", graph.Document.Current.ShipmentNbr, package.LineNbr);
+                            PXTrace.WriteWarning(PXMessages.LocalizeFormatNoPrefix(WM.Messages.PackageInvalidFileExtension, graph.Document.Current.ShipmentNbr, package.LineNbr));
                         }
                     }
                 }
@@ -972,7 +972,7 @@ namespace PX.Objects.SO
                 }
                 else
                 {
-                    throw new PXException("Line {0} not found in shipment.", pickLine.LineNbr);
+                    throw new PXException(PXMessages.LocalizeFormatNoPrefix(WM.Messages.ShipmentLineMissing, pickLine.LineNbr));
                 }
             }
         }
