@@ -1,4 +1,5 @@
-﻿using HidLibrary;
+﻿using Acumatica.DeviceHub.Properties;
+using HidLibrary;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -78,7 +79,7 @@ namespace Acumatica.DeviceHub
             {
                 currentDevice = new ScaleDevice
                 {
-                    Description = String.Format("Unknown Device (VendorId=0x{0:X}, ProductId=0x{1:X})", Properties.Settings.Default.ScaleDeviceVendorId, Properties.Settings.Default.ScaleDeviceProductId),
+                    Description = String.Format(Strings.UnknownDeviceDescription, Properties.Settings.Default.ScaleDeviceVendorId, Properties.Settings.Default.ScaleDeviceProductId),
                     VendorId = Properties.Settings.Default.ScaleDeviceVendorId,
                     ProductId = Properties.Settings.Default.ScaleDeviceProductId
                 };
@@ -105,7 +106,7 @@ namespace Acumatica.DeviceHub
             Uri validatedUri;
             if(!Uri.TryCreate(acumaticaUrlTextBox.Text, UriKind.Absolute, out validatedUri))
             {
-                MessageBox.Show("Please enter a valid URL.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Strings.UrlMissingPrompt, this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 mainTab.SelectedIndex = 0;
                 acumaticaUrlTextBox.Focus();
                 return;
@@ -113,7 +114,7 @@ namespace Acumatica.DeviceHub
 
             if (String.IsNullOrEmpty(loginTextBox.Text))
             {
-                MessageBox.Show("Please enter your login.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Strings.LoginMissingPrompt, this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 mainTab.SelectedIndex = 0;
                 loginTextBox.Focus();
                 return;
@@ -121,7 +122,7 @@ namespace Acumatica.DeviceHub
 
             if (String.IsNullOrEmpty(passwordTextBox.Text))
             {
-                MessageBox.Show("Please enter your password.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Strings.PasswordMissingPrompt, this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 mainTab.SelectedIndex = 0;
                 passwordTextBox.Focus();
                 return;
@@ -129,14 +130,14 @@ namespace Acumatica.DeviceHub
 
             if(_queues.Count == 0 && String.IsNullOrEmpty(acumaticaScaleIDTextBox.Text))
             {
-                MessageBox.Show("Please configure at least one print queue or scale to monitor.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Strings.PrintQueueOrScaleConfigurationMissingPrompt, this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 mainTab.SelectedIndex = 1;
                 return;
             }
 
             if(!String.IsNullOrEmpty(acumaticaScaleIDTextBox.Text) && (scalesDropDown.SelectedItem == null || (scalesDropDown.SelectedItem as ScaleDevice).VendorId == 0))
             {
-                MessageBox.Show(String.Format("Please select the device to link to Acumatica for scale ID {0}.", acumaticaScaleIDTextBox.Text), this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(String.Format(Strings.DeviceMissingPrompt, acumaticaScaleIDTextBox.Text), this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 mainTab.SelectedIndex = 2;
                 scalesDropDown.Focus();
                 return;
@@ -145,7 +146,7 @@ namespace Acumatica.DeviceHub
             PrintQueue unnamedQueue = _queues.FirstOrDefault(q => q.QueueName == NewQueueName);
             if (unnamedQueue != null)
             {
-                MessageBox.Show("Please give a name to this queue.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Strings.QueueNameMissingPrompt, this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 mainTab.SelectedIndex = 1;
                 queueList.SelectedItem = unnamedQueue;
                 queueName.Focus();
@@ -161,7 +162,7 @@ namespace Acumatica.DeviceHub
             }
             catch (Exception ex)
             {
-                MessageBox.Show(String.Format("Error connecting to Acumatica: {0}", ex.Message), this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(String.Format(Strings.ScreenWebServiceConnexionError, ex.Message), this.Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 mainTab.SelectedIndex = 0;
                 acumaticaUrlTextBox.Focus();
                 return;

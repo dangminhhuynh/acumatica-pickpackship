@@ -1,4 +1,5 @@
-﻿using Acumatica.DeviceHub.ScreenApi;
+﻿using Acumatica.DeviceHub.Properties;
+using Acumatica.DeviceHub.ScreenApi;
 using HidLibrary;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,7 @@ namespace Acumatica.DeviceHub
 
             if(String.IsNullOrEmpty(Properties.Settings.Default.ScaleID))
             {
-                _progress.Report(new MonitorMessage("No scale configured."));
+                _progress.Report(new MonitorMessage(Strings.ScaleConfigurationMissingWarning));
                 return null;
             }
 
@@ -54,7 +55,7 @@ namespace Acumatica.DeviceHub
                                 waitTries++;
                                 if (waitTries > 10)
                                 {
-                                    throw new ApplicationException("Failed to connect to scale.");
+                                    throw new ApplicationException(Strings.ScaleConnectionError);
                                 }
                             }
 
@@ -71,7 +72,7 @@ namespace Acumatica.DeviceHub
                                 Convert.ToDecimal(inData.Data[5]) * 256) * 
                                 Properties.Settings.Default.ScaleWeightMultiplier;
 
-                            _progress.Report(new MonitorMessage(String.Format("Scale weight: {0}", currentWeight)));
+                            _progress.Report(new MonitorMessage(String.Format(Strings.ScaleWeightNotify, currentWeight)));
                             scale.CloseDevice();
                         }
                         
@@ -89,7 +90,7 @@ namespace Acumatica.DeviceHub
                         catch (Exception ex)
                         {
                             // Assume the server went offline or our session got lost - new login will be attempted in next iteration
-                            _progress.Report(new MonitorMessage(String.Format("An error occured while updating the scale weight: {0}", ex.Message), MonitorMessage.MonitorStates.Error));
+                            _progress.Report(new MonitorMessage(String.Format(Strings.ScaleWeightError, ex.Message), MonitorMessage.MonitorStates.Error));
                             _screen = null;
                             System.Threading.Thread.Sleep(Properties.Settings.Default.ErrorWaitInterval);
                         }
@@ -102,7 +103,7 @@ namespace Acumatica.DeviceHub
 
         private void UpdateWeight(string scaleID, decimal weight)
         {
-            _progress.Report(new MonitorMessage(String.Format("Updating weight for scale ID {0}...", scaleID)));
+            _progress.Report(new MonitorMessage(String.Format(Strings.UpdateScaleWeightNotify, scaleID)));
             var commands = new Command[]
             {
                 new Key { ObjectName = "Scale", FieldName = "ScaleID", Value = "=[Scale.ScaleID]" },
@@ -112,12 +113,12 @@ namespace Acumatica.DeviceHub
                 new ScreenApi.Action { FieldName = "Save", ObjectName = "Scale" },
             };
             var result = _screen.Submit(ScaleScreen, commands);
-            _progress.Report(new MonitorMessage(String.Format("Weight for scale ID {0} was updated.", scaleID), MonitorMessage.MonitorStates.Ok));
+            _progress.Report(new MonitorMessage(String.Format(Strings.UpdateScaleWeightSuccessNotify, scaleID), MonitorMessage.MonitorStates.Ok));
         }
 
         private bool LoginToAcumatica()
         {
-            _progress.Report(new MonitorMessage(String.Format("Logging in to {0}...", Properties.Settings.Default.AcumaticaUrl)));
+            _progress.Report(new MonitorMessage(String.Format(Strings.LoginNotify, Properties.Settings.Default.AcumaticaUrl)));
             _screen = new ScreenApi.Screen();
             _screen.Url = Properties.Settings.Default.AcumaticaUrl + "/Soap/.asmx";
             _screen.CookieContainer = new System.Net.CookieContainer();
@@ -136,7 +137,7 @@ namespace Acumatica.DeviceHub
 
         private void LogoutFromAcumatica()
         {
-            _progress.Report(new MonitorMessage("Logging out..."));
+            _progress.Report(new MonitorMessage(Strings.LogoutNotify));
             if (_screen != null)
             {
                 try

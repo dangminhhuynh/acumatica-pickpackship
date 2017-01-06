@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Acumatica.DeviceHub.Properties;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -41,7 +42,7 @@ namespace Acumatica.DeviceHub
         
         private void StartMonitors()
         {
-            WriteToLog("Starting monitoring tasks...");
+            WriteToLog(Strings.StartMonitoringNotify);
             _cancellationTokenSource = new CancellationTokenSource();
             _tasks = new List<Task>();
             _errorTasks = new HashSet<object>();
@@ -54,7 +55,7 @@ namespace Acumatica.DeviceHub
                 if(task != null)
                 {
                     _tasks.Add(task);
-                    WriteToLog(String.Format("{0} started successfully.", t.Name));
+                    WriteToLog(String.Format(Strings.StartMonitoringSuccessNotify, t.Name));
                 }
             }
         }
@@ -63,12 +64,12 @@ namespace Acumatica.DeviceHub
         {
             if (_tasks == null) return;
 
-            WriteToLog("Stopping monitoring tasks...");
+            WriteToLog(Strings.StopMonitoringNotify);
             _cancellationTokenSource.Cancel();
             Task.WaitAll(_tasks.ToArray());
             _tasks = null;
             _cancellationTokenSource = null;
-            WriteToLog("All the monitoring tasks have been stopped.");
+            WriteToLog(Strings.StopMonitoringSuccessNotify);
         }
 
         private void HandleMonitorProgress(object sender, MonitorMessage message)
@@ -133,7 +134,7 @@ namespace Acumatica.DeviceHub
                 this.ShowInTaskbar = false;
                 notifyIcon.Visible = true;
 
-                notifyIcon.ShowBalloonTip(1000, this.Text, "The application is still running and monitoring your devices. To access it, click the icon in the tray.", ToolTipIcon.Info);
+                notifyIcon.ShowBalloonTip(1000, this.Text, Strings.MinimizedToNotificationAreaWarning, ToolTipIcon.Info);
             }
         }
 
