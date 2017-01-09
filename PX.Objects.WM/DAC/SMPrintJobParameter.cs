@@ -20,7 +20,8 @@ namespace PX.SM
 
         public abstract class parameterValue : PX.Data.IBqlField { }
         [PXDBString(255, IsUnicode = true)]
-        [PXUIField(DisplayName = "Parameter Value")]
+        [PXDefault(PersistingCheck = PXPersistingCheck.Null)]
+        [PXUIField(DisplayName = "Parameter Value", Required = true)]
         public virtual string ParameterValue { get; set; }
     }
 }
