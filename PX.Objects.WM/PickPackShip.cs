@@ -865,8 +865,10 @@ namespace PX.Objects.SO
         {
             if (UserSetup.AskExt() == WebDialogResult.OK)
             {
-                Caches[typeof(SOPickPackShipUserSetup)].Persist(PXDBOperation.Insert);
-                Caches[typeof(SOPickPackShipUserSetup)].Persist(PXDBOperation.Update);
+                PXCache cache = Caches[typeof(SOPickPackShipUserSetup)];
+                cache.Persist(PXDBOperation.Insert);
+                cache.Persist(PXDBOperation.Update);
+                cache.Clear();
             }
         }
 
