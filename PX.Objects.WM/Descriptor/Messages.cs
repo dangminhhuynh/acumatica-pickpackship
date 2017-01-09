@@ -11,6 +11,8 @@ namespace PX.Objects.WM
         public const string Remove = "Remove";
         public const string Weight = "Weight";
 
+        public const string MissingFileIdError = "Print job has no 'Report ID' or 'FILEID' parameter defined.";
+        
         #region Barcode
         public const string BarcodeMissing = "Barcode {0} not found in database.";
         public const string BarcodePrompt = "Please scan a barcode.";

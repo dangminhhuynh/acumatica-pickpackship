@@ -88,6 +88,15 @@ namespace Acumatica.DeviceHub.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Queue {0} - print job {1} has no &apos;FILEID&apos; parameter configured. The print job will be discarded..
+        /// </summary>
+        internal static string FileIdMissingWarning {
+            get {
+                return ResourceManager.GetString("FileIdMissingWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Please enter your login..
         /// </summary>
         internal static string LoginMissingPrompt {
