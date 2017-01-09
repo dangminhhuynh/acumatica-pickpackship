@@ -49,7 +49,7 @@
 	</px:PXDataSource>
 </asp:content>
 <asp:content id="cont2" contentplaceholderid="phF" runat="Server">
-	<px:PXFormView ID="form" runat="server" DataSourceID="ds" Height="63px" Width="100%" Visible="true" DataMember="Document" DefaultControlID="edShipmentNbr">
+	<px:PXFormView ID="form" runat="server" DataSourceID="ds" Height="100px" Width="100%" Visible="true" DataMember="Document" DefaultControlID="edShipmentNbr">
         <Template>
             <px:PXLayoutRule runat="server" StartColumn="True" LabelsWidth="S" ControlSize="L" />
 			<px:PXSelector ID="edShipmentNbr" runat="server" DataField="ShipmentNbr" AutoRefresh="true" AllowEdit="true" CommitChanges="true" AutoComplete="false" />
