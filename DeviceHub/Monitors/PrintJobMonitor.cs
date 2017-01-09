@@ -195,36 +195,48 @@ namespace Acumatica.DeviceHub
         private void ProcessJob(PrintQueue queue, string jobID, string reportID, Dictionary<string, string> parameters)
         {
             _progress.Report(new MonitorMessage(String.Format(Strings.ProcessPrintJobNotify, queue.QueueName, jobID)));
+            const string fileIdKey = "FILEID";
             byte[] data = null;
+
             if (reportID == String.Empty)
             {
-                data = GetFileID(parameters["FILEID"]);
+                if (parameters.ContainsKey(fileIdKey))
+                {
+                    data = GetFileID(parameters[fileIdKey]);
+                }
+                else
+                {
+                    _progress.Report(new MonitorMessage(String.Format(Strings.FileIdMissingWarning, queue.QueueName, jobID), MonitorMessage.MonitorStates.Warning));
+                }
             }
             else
             {
                 data = GetReportPdf(reportID, parameters);
             }
 
-            if (queue.RawMode)
+            if (data != null)
             {
-                if (IsPdf(data))
+                if (queue.RawMode)
                 {
-                    _progress.Report(new MonitorMessage(String.Format(Strings.PdfWrongModeWarning, queue.QueueName, jobID), MonitorMessage.MonitorStates.Warning));
+                    if (IsPdf(data))
+                    {
+                        _progress.Report(new MonitorMessage(String.Format(Strings.PdfWrongModeWarning, queue.QueueName, jobID), MonitorMessage.MonitorStates.Warning));
+                    }
+                    else
+                    {
+                        PrintRaw(queue, data);
+                    }
                 }
                 else
                 {
-                    PrintRaw(queue, data);
-                }
-            }
-            else
-            {
-                if (IsPdf(data))
-                {
-                    PrintPdf(queue, data);
-                }
-                else
-                {
-                    _progress.Report(new MonitorMessage(String.Format(Strings.PdfWrongFileFormatWarning, queue.QueueName, jobID), MonitorMessage.MonitorStates.Warning));
+                    if (IsPdf(data))
+                    {
+                        PrintPdf(queue, data);
+                    }
+                    else
+                    {
+                        _progress.Report(new MonitorMessage(String.Format(Strings.PdfWrongFileFormatWarning, queue.QueueName, jobID), MonitorMessage.MonitorStates.Warning));
+                    }
                 }
             }
 
