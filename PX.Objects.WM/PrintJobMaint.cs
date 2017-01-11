@@ -11,6 +11,9 @@ namespace PX.SM
 
         public virtual void SMPrintJob_RowPersisting(PXCache sender, PXRowPersistingEventArgs e)
         {
+            if (e.Operation.Equals(PXDBOperation.Delete))
+                return;
+
             const string fileIdParameter = "FILEID";
             bool isFileId = false;
             SMPrintJob smPrintJob = e.Row as SMPrintJob;
