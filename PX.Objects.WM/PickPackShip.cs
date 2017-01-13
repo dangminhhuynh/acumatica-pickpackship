@@ -37,6 +37,7 @@ namespace PX.Objects.SO
         public const string LotSerial = "S";
         public const string NewPackage = "P";
         public const string PackageComplete = "PC";
+        public const string QuickPackage = "PQ";
     }
 
     public class PickPackInfo : IBqlTable
@@ -293,6 +294,10 @@ namespace PX.Objects.SO
                         ProcessNewPackageCommand(commands);
                         break;
                     case ScanCommands.PackageComplete:
+                        ProcessPackageCompleteCommand();
+                        break;
+                    case ScanCommands.QuickPackage:
+                        ProcessNewPackageCommand(commands);
                         ProcessPackageCompleteCommand();
                         break;
                     default:
