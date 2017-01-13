@@ -246,9 +246,12 @@ namespace PX.Objects.SO
             int quantity = 0;
             if(int.TryParse(commands[1], out quantity))
             {
-                doc.Quantity = quantity;
-                doc.Status = ScanStatuses.Information;
-                doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.CommandSetQuantity, quantity);
+                if (IsQuantityEnabled())
+                {
+                    doc.Quantity = quantity;
+                    doc.Status = ScanStatuses.Information;
+                    doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.CommandSetQuantity, quantity);
+                }
 
                 if(commands.Length > 2)
                 {
@@ -280,10 +283,16 @@ namespace PX.Objects.SO
                         doc.Message = WM.Messages.CommandLot;
                         break;
                     case ScanCommands.Confirm:
-                        this.Confirm.Press();
+                        if (Confirm.GetEnabled())
+                        {
+                            this.Confirm.Press();
+                        }
                         break;
                     case ScanCommands.ConfirmAll:
-                        this.ConfirmAll.Press();
+                        if (ConfirmAll.GetEnabled())
+                        {
+                            this.ConfirmAll.Press();
+                        }
                         break;
                     case ScanCommands.Clear:
                         ClearScreen();
@@ -939,6 +948,15 @@ namespace PX.Objects.SO
                     return true;
                 }
             }
+
+            return false;
+        }
+
+        protected virtual bool IsQuantityEnabled()
+        {
+            foreach (PXEventSubscriberAttribute attribute in Document.Cache.GetAttributesReadonly<PickPackInfo.quantity>())
+                if (attribute is PXUIFieldAttribute)
+                    return ((PXUIFieldAttribute)attribute).Enabled;
 
             return false;
         }
