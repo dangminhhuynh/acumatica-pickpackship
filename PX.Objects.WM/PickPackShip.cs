@@ -259,7 +259,8 @@ namespace PX.Objects.SO
                 }
                 else
                 {
-                    throw new PXException(WM.Messages.CommandAccessRightsError);
+                    doc.Status = ScanStatuses.Error;
+                    doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.CommandAccessRightsError);
                 }
             }
             else
@@ -293,7 +294,8 @@ namespace PX.Objects.SO
                         }
                         else
                         {
-                            throw new PXException(WM.Messages.CommandAccessRightsError);
+                            doc.Status = ScanStatuses.Error;
+                            doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.CommandAccessRightsError);
                         }
                         break;
                     case ScanCommands.ConfirmAll:
@@ -303,7 +305,8 @@ namespace PX.Objects.SO
                         }
                         else
                         {
-                            throw new PXException(WM.Messages.CommandAccessRightsError);
+                            doc.Status = ScanStatuses.Error;
+                            doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.CommandAccessRightsError);
                         }
                         break;
                     case ScanCommands.Clear:
