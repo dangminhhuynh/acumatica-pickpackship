@@ -31,6 +31,7 @@ namespace PX.Objects.WM
         public const string CommandRemove = "Remove mode set.";
         public const string CommandUnknown = "Unknown command.";
         public const string CommandSetQuantity = "Quantity set to {0}.";
+        public const string CommandAccessRightsError = "Insufficient access rights to perform this command.";
         #endregion
 
         #region Lot/Serial

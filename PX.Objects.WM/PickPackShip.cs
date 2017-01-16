@@ -251,11 +251,15 @@ namespace PX.Objects.SO
                     doc.Quantity = quantity;
                     doc.Status = ScanStatuses.Information;
                     doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.CommandSetQuantity, quantity);
-                }
 
-                if(commands.Length > 2)
+                    if (commands.Length > 2)
+                    {
+                        ProcessBarcode(commands[2]);
+                    }
+                }
+                else
                 {
-                    ProcessBarcode(commands[2]);
+                    throw new PXException(WM.Messages.CommandAccessRightsError);
                 }
             }
             else
@@ -287,11 +291,19 @@ namespace PX.Objects.SO
                         {
                             this.Confirm.Press();
                         }
+                        else
+                        {
+                            throw new PXException(WM.Messages.CommandAccessRightsError);
+                        }
                         break;
                     case ScanCommands.ConfirmAll:
                         if (ConfirmAll.GetEnabled())
                         {
                             this.ConfirmAll.Press();
+                        }
+                        else
+                        {
+                            throw new PXException(WM.Messages.CommandAccessRightsError);
                         }
                         break;
                     case ScanCommands.Clear:
