@@ -207,8 +207,8 @@ namespace Acumatica.DeviceHub
                 
                 switch(selectedItem.Orientation)
                 {
-                    case PrintQueue.PrinterOrientation.PrinterDefault:
-                        orientationDefault.Checked = true;
+                    case PrintQueue.PrinterOrientation.Automatic:
+                        orientationAutomatic.Checked = true;
                         break;
                     case PrintQueue.PrinterOrientation.Portrait:
                         orientationPortrait.Checked = true;
@@ -227,7 +227,7 @@ namespace Acumatica.DeviceHub
             newQueue.PrinterName = new PrinterSettings().PrinterName;
             newQueue.PaperSize = PrintQueue.PrinterDefault;
             newQueue.PaperSource = PrintQueue.PrinterDefault;
-            newQueue.Orientation = PrintQueue.PrinterOrientation.PrinterDefault;
+            newQueue.Orientation = PrintQueue.PrinterOrientation.Automatic;
 
             _queues.Add(newQueue);
             queueList.Items.Add(newQueue);
@@ -313,12 +313,12 @@ namespace Acumatica.DeviceHub
 
         private void orientationDefault_CheckedChanged(object sender, EventArgs e)
         {
-            if(orientationDefault.Checked)
+            if(orientationAutomatic.Checked)
             { 
                 var selectedItem = queueList.SelectedItem as PrintQueue;
                 if (selectedItem != null)
                 {
-                    selectedItem.Orientation = PrintQueue.PrinterOrientation.PrinterDefault;
+                    selectedItem.Orientation = PrintQueue.PrinterOrientation.Automatic;
                 }
             }
         }

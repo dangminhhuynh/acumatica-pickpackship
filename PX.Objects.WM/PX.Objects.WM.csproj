@@ -62,9 +62,13 @@
     <Compile Include="PrintJobMaint.cs" />
     <Compile Include="PrintQueueMaint.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PickListPrintToQueueExtensions.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>PowerShell -File "$(SolutionDir)\UpdateCustomizationPackage.ps1" -SolutionDir $(SolutionDir) -ConfigurationName $(ConfigurationName) -TargetDir $(TargetDir)</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

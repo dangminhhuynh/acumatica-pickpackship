@@ -1,0 +1,13 @@
+﻿<SiteMapNode>
+    <data-set>
+        <relations format-version="3" relations-version="20160101" main-table="SiteMap" />
+        <layout>
+            <table name="SiteMap" />
+        </layout>
+        <data>
+            <SiteMap>
+                <row Position="1002" Title="Scales" Url="~/Pages/SM/SM206530.aspx" Expanded="0" IsFolder="0" ScreenID="SM206530" NodeID="6ba8f23c-cc0e-4001-a497-f81f551b9333" ParentID="a92b3f0c-3d9c-43f3-ac11-ece333cc426f" />
+            </SiteMap>
+        </data>
+    </data-set>
+</SiteMapNode>

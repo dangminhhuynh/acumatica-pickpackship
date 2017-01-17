@@ -908,9 +908,9 @@ namespace PX.Objects.SO
 
             if (printSetup.ShipmentConfirmation == true)
             {
-                //TODO: SO642000 shouldn't be hardcoded - this needs to be read from notification
+                //TODO: SO642000 shouldn't be hardcoded - this needs to be read from notification; see PickListPrintToQueueExtensions for example
                 if (jobMaint == null) jobMaint = PXGraph.CreateInstance<PrintJobMaint>();
-                AddPrintJob(jobMaint, printSetup.ShipmentConfirmationQueue, "SO642000", new Dictionary<string, string> { { "ShipmentNbr", graph.Document.Current.ShipmentNbr } });
+                jobMaint.AddPrintJob(printSetup.ShipmentConfirmationQueue, "SO642000", new Dictionary<string, string> { { "ShipmentNbr", graph.Document.Current.ShipmentNbr } });
             }
             
             if (printSetup.ShipmentLabels == true)
@@ -926,7 +926,7 @@ namespace PX.Objects.SO
                         string extension = System.IO.Path.GetExtension(fileInfo.Name).ToLower();
                         if (extension == ".pdf" || extension == ".zpl" || extension == ".zplii" || extension == ".epl" || extension == ".epl2" || extension == ".dpl")
                         {
-                            AddPrintJob(jobMaint, printSetup.ShipmentLabelsQueue, "", new Dictionary<string, string> { { "FILEID", id.ToString() } });
+                            jobMaint.AddPrintJob(printSetup.ShipmentLabelsQueue, "", new Dictionary<string, string> { { "FILEID", id.ToString() } });
                         }
                         else
                         {
@@ -936,24 +936,7 @@ namespace PX.Objects.SO
                 }
             }
         }
-
-        protected virtual void AddPrintJob(PrintJobMaint graph, string printQueue, string reportID, Dictionary<string, string> parameters)
-        {
-            var job = (PX.SM.SMPrintJob)graph.Job.Cache.CreateInstance();
-            job.PrintQueue = printQueue;
-            job.ReportID = reportID;
-            graph.Job.Insert(job);
-
-            foreach (var p in parameters)
-            {
-                var parameter = (PX.SM.SMPrintJobParameter) graph.Parameters.Cache.CreateInstance();
-                parameter.ParameterName = p.Key;
-                parameter.ParameterValue = p.Value;
-                graph.Parameters.Insert(parameter);
-            }
-
-            graph.Actions.PressSave();
-        }
+        
         protected virtual bool IsConfirmationNeeded()
         {
             foreach (SOShipLinePick pickLine in this.Transactions.Select())

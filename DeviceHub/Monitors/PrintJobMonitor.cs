@@ -303,9 +303,17 @@ namespace Acumatica.DeviceHub
                 }
             }
 
-            if (queue.Orientation == PrintQueue.PrinterOrientation.Landscape)
+            if (queue.Orientation == PrintQueue.PrinterOrientation.Automatic)
+            {
+                pdfPrint.IsAutoRotate = true;
+            }
+            else if(queue.Orientation == PrintQueue.PrinterOrientation.Landscape)
             {
                 pdfPrint.IsLandscape = true;
+            }
+            else if(queue.Orientation == PrintQueue.PrinterOrientation.Portrait)
+            {
+                pdfPrint.IsLandscape = false;
             }
 
             pdfPrint.Print(pdfReport);

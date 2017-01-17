@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using PX.Data;
+using System.Collections.Generic;
 
 namespace PX.SM
 {
@@ -9,7 +10,7 @@ namespace PX.SM
         public PXSelect<SMPrintJob> Job;
         public PXSelect<SMPrintJobParameter, Where<SMPrintJobParameter.jobID, Equal<Current<SMPrintJob.jobID>>>> Parameters;
 
-        public virtual void SMPrintJob_RowPersisting(PXCache sender, PXRowPersistingEventArgs e)
+        protected virtual void SMPrintJob_RowPersisting(PXCache sender, PXRowPersistingEventArgs e)
         {
             if (e.Operation.Equals(PXDBOperation.Delete))
                 return;
@@ -32,6 +33,24 @@ namespace PX.SM
                 if (!isFileId)
                     throw new PXRowPersistingException(typeof(SMPrintJob.reportID).Name, null, Objects.WM.Messages.MissingFileIdError);
             }
+        }
+
+        public virtual void AddPrintJob(string printQueue, string reportID, Dictionary<string, string> parameters)
+        {
+            var job = (PX.SM.SMPrintJob)this.Job.Cache.CreateInstance();
+            job.PrintQueue = printQueue;
+            job.ReportID = reportID;
+            this.Job.Insert(job);
+
+            foreach (var p in parameters)
+            {
+                var parameter = (PX.SM.SMPrintJobParameter)this.Parameters.Cache.CreateInstance();
+                parameter.ParameterName = p.Key;
+                parameter.ParameterValue = p.Value;
+                this.Parameters.Insert(parameter);
+            }
+
+            this.Actions.PressSave();
         }
     }
 }

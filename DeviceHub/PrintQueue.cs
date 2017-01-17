@@ -14,7 +14,7 @@ namespace Acumatica.DeviceHub
 
         public enum PrinterOrientation
         {
-            PrinterDefault = PrintQueue.PrinterDefault,
+            Automatic = PrintQueue.PrinterDefault,
             Portrait = 1,
             Landscape = 2,
         }

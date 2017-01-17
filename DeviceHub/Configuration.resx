@@ -501,31 +501,31 @@
   <data name="&gt;&gt;orientationPortrait.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="orientationDefault.AutoSize" type="System.Boolean, mscorlib">
+  <data name="orientationAutomatic.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="orientationDefault.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="orientationAutomatic.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 19</value>
   </data>
-  <data name="orientationDefault.Size" type="System.Drawing.Size, System.Drawing">
-    <value>92, 17</value>
+  <data name="orientationAutomatic.Size" type="System.Drawing.Size, System.Drawing">
+    <value>72, 17</value>
   </data>
-  <data name="orientationDefault.TabIndex" type="System.Int32, mscorlib">
+  <data name="orientationAutomatic.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
   </data>
-  <data name="orientationDefault.Text" xml:space="preserve">
-    <value>Printer &amp;Default</value>
+  <data name="orientationAutomatic.Text" xml:space="preserve">
+    <value>&amp;Automatic</value>
   </data>
-  <data name="&gt;&gt;orientationDefault.Name" xml:space="preserve">
-    <value>orientationDefault</value>
+  <data name="&gt;&gt;orientationAutomatic.Name" xml:space="preserve">
+    <value>orientationAutomatic</value>
   </data>
-  <data name="&gt;&gt;orientationDefault.Type" xml:space="preserve">
+  <data name="&gt;&gt;orientationAutomatic.Type" xml:space="preserve">
     <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;orientationDefault.Parent" xml:space="preserve">
+  <data name="&gt;&gt;orientationAutomatic.Parent" xml:space="preserve">
     <value>orientationGroupBox</value>
   </data>
-  <data name="&gt;&gt;orientationDefault.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;orientationAutomatic.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
   <data name="orientationGroupBox.Location" type="System.Drawing.Point, System.Drawing">

@@ -1,0 +1,14 @@
+﻿<Page path="~/pages/so/so503000.aspx" ControlId="1" pageSource="vVhLU+M4EL5TxX9weYs97ZIw1NTsQjK1IYEZqgJk4wxwSwlbxJrYlkeW85jD/vbtlmzHNo4TIBmKgyK3+/FJ/XW3W0f/GAMyoUafBJMYFm2z+5tp3JBIUoEPrpgHe/81VjtR44oLv0clYd6xr7ZNoxNLfjmjgXxggsZh25QipqZxTzzmEEmH9EdMI9k2n4kXwX6XO4lm6+5j87TZbB6TKFwc25FpXAcuFUxGbROtjVMB8/DAgL8Rk/jat0DiwlHOm8bR58ODw4MWBKP9HC1DatwzIWPiDYh0t4gAVbTAibMuDyQEYlz32qYN6xN0V20NPGLTr9xzqMCHoduzTEPEAYHALCpmoOaz9rIVLs4Gjz0iicVjYVOlzIky6UhLg4sRe8J4RgquB+agryfN5pFpYAy3xIeHg8fju6fv1JbRsXUH/9fBjDObWi4LfXDLNAaC+UQs7xmdt03AVQWEkfY5cS6oS2aMC9DDw9iD07DIjDpwNHAkZgPDbuTiXgfDh/UwXNWigFijZ0rTM/x4gcIKpxQmSy4RlZ9/ssChizMDECmhg+/cUP+JilXEXRJKxgN0wwO0YAly9JnEnkTXBfdQP3U6+lnipfJ0RP0QocntrSLokyWP5TD2aNlzSxIBur3YD9Iz7JMn6kWJr9GNRg1MW+wnRAS/G5U2eoKHPT4PQNz3mey6kI80SpUW/K6C74pRz2mbqcQaGxDgiPn00mGyzo6KCoXrTOWE3mftMnA22cpEtrCklSYpsklxQaysPNHedak9veCL9THY7tRy+RyyEPLDqQUtL1YdzK+4bBadIHEAI07rTqYbR5L7mOV1MeWl1pnDdOSi1hYRggE9e/GE1V7xguD7bCKB3jNSf2CJyLuAtJik9SCmEm8nhwGxpwQgmWDdqDNVEixZzHFio0SKrUaBz7ctHKfrC8eX2sLxRTBHaZnAYoui8ZWyiQsSJx+b4aKyhpwbHn2WZwY8PzckD/WqVFk6ngdJqhBK25iO8x0uORZUnVjY7Zg5qKwpXkWAVtfh6+BHDG1QosqiRNhuquqCSNv9FmJTlG6tylZS0LEALgN7wCOmH+hzvoJORZc6dZLR6oXbJ/HHKg1zy/FFx7Z5HMjhmNi2xHYie3on4BzgTdMY0pAAJ2lqiRK38tWxT2dAM5VXEw9JPS5UZKU7MsuEim8N+XxNsd0VD5Zp8LGCB4u2MopP2VyRxwYqz2TqdWdEtOKc5Mg28U4mdhkQaBJh90p3z+paYbFLw9/kwYqk3krsZRfearHPbYJ3ejvLeenXeVDREiCkG5uaTOa1ARcOuRsDCWyIUEu8zsxtjOlVigmR/lcuX1hTt+Q29rxMecX9Ui++dKLVqE/TVsIVtd4iNWi5Db5kmTSiC9nx2ATyugvOYRRYpOBXkqBJVOpnB7Xp+695lgtZTJEbPqPZTkIOp6o21MNcdjyl6/UwqjRNLPytLPRZMMVqTQIQm0G57HE71tPazoxLIuMI6RsKnLoVXCCC27HC64LUSVGIcFfq8zTTYxFcuSW2GHiVO9nf3m1XVMpVX3DyaR9G8+xWCvz3iTwvR/7XyX6dGKfLsUMjW+w7+lX7sZeTTRvqgvL1KCugd2t7fH2Li/2i+cDFdCJ4HFYND29VejcPqse5eoUFft+SOFX9ydH+EFv4fV2JdJaruAak+Ldzo+NkbNW3gYX6M8177sRb0H6gGt61gMME9Gs8ucf36a49WW9XDwjZp5dyV1FlptWobnKSMTgbfPKDUuPFpNTCWRHnEDWTwJiF49EDjKR8nmu8dMG+YUE6w37AD56Ngh71ae+CiPSTpt4oNRfpKzknK+b0/wE=">
+    <PXFormView ID="form" ParentId="phF_form" TypeFullName="PX.Web.UI.PXFormView">
+        <Children Key="Template">
+            <AddItem>
+                <PXSelector TypeFullName="PX.Web.UI.PXSelector">
+                    <Prop Key="Virtual:ApplyStylesheetSkin" />
+                    <Prop Key="ID" Value="CstPXSelector1" />
+                    <Prop Key="DataField" Value="PrintQueue" />
+                </PXSelector>
+            </AddItem>
+            <PXLayoutRule OriginalIndex="6" />
+        </Children>
+    </PXFormView>
+</Page>

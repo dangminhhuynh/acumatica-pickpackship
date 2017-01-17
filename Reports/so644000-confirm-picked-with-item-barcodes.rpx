@@ -182,7 +182,7 @@
       <ParentName>SOShipLine</ParentName>
     </ReportRelation>
   </Relations>
-  <SchemaUrl>http://10.211.55.13/acumaticademo60</SchemaUrl>
+  <SchemaUrl>http://localhost/AcumaticaDemo60</SchemaUrl>
   <Sorting>
     <SortExp>
       <DataField>SOShipment.ShipmentNbr</DataField>
@@ -2473,8 +2473,8 @@
           <QRCodeSettings />
           <Size>520px, 48px</Size>
           <Source>Barcode</Source>
-          <Value>=IsNull([SOShipLineSplit.LotSerialNbr],[SOShipLine.LotSerialNbr])</Value>
-          <VisibleExpr>=IsNull([SOShipLineSplit.LotSerialNbr],[SOShipLine.LotSerialNbr])&lt;&gt;''</VisibleExpr>
+          <Value>=IsNull(IsNull([SOShipLineSplit.LotSerialNbr],[SOShipLine.LotSerialNbr]),'')</Value>
+          <VisibleExpr>=IsNull(IsNull([SOShipLineSplit.LotSerialNbr],[SOShipLine.LotSerialNbr]),'')&lt;&gt;''</VisibleExpr>
         </PictureBox>
         <TextBox Name="textBox12">
           <Format>=[SOShipLine.ShippedQty.Format]</Format>

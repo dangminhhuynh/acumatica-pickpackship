@@ -1,0 +1,13 @@
+﻿<Sql TableName="SMPrintJobParameter" TableSchemaXml="#CDATA">
+    <CDATA name="TableSchemaXml"><![CDATA[<table name="SMPrintJobParameter">
+  <col name="CompanyID" type="Int" default="Zero" />
+  <col name="JobID" type="Int" />
+  <col name="ParameterName" type="NVarChar(255)" />
+  <col name="ParameterValue" type="NVarChar(255)" />
+  <index name="PK_SMPrintJobParameter" clustered="true" primary="true" unique="true">
+    <col name="CompanyID" />
+    <col name="JobID" />
+    <col name="ParameterName" />
+  </index>
+</table>]]></CDATA>
+</Sql>

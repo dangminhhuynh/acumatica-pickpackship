@@ -1,0 +1,19 @@
+﻿<Sql TableName="SMScale" TableSchemaXml="#CDATA">
+    <CDATA name="TableSchemaXml"><![CDATA[<table name="SMScale">
+  <col name="CompanyID" type="Int" default="Zero" />
+  <col name="ScaleID" type="VarChar(10)" />
+  <col name="Descr" type="NVarChar(100)" nullable="true" />
+  <col name="LastWeight" type="Decimal(25,6)" nullable="true" />
+  <col name="tstamp" type="Timestamp" />
+  <col name="CreatedByID" type="UniqueIdentifier" />
+  <col name="CreatedByScreenID" type="Char(8)" />
+  <col name="CreatedDateTime" type="DateTime" />
+  <col name="LastModifiedByID" type="UniqueIdentifier" />
+  <col name="LastModifiedByScreenID" type="Char(8)" />
+  <col name="LastModifiedDateTime" type="DateTime" />
+  <index name="PK_SMScale" clustered="true" primary="true" unique="true">
+    <col name="CompanyID" />
+    <col name="ScaleID" />
+  </index>
+</table>]]></CDATA>
+</Sql>

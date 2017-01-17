@@ -47,7 +47,7 @@
             this.orientationGroupBox = new System.Windows.Forms.GroupBox();
             this.orientationLandscape = new System.Windows.Forms.RadioButton();
             this.orientationPortrait = new System.Windows.Forms.RadioButton();
-            this.orientationDefault = new System.Windows.Forms.RadioButton();
+            this.orientationAutomatic = new System.Windows.Forms.RadioButton();
             this.paperSizeCombo = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.printerCombo = new System.Windows.Forms.ComboBox();
@@ -183,7 +183,7 @@
             // 
             this.orientationGroupBox.Controls.Add(this.orientationLandscape);
             this.orientationGroupBox.Controls.Add(this.orientationPortrait);
-            this.orientationGroupBox.Controls.Add(this.orientationDefault);
+            this.orientationGroupBox.Controls.Add(this.orientationAutomatic);
             resources.ApplyResources(this.orientationGroupBox, "orientationGroupBox");
             this.orientationGroupBox.Name = "orientationGroupBox";
             this.orientationGroupBox.TabStop = false;
@@ -206,14 +206,14 @@
             this.orientationPortrait.UseVisualStyleBackColor = true;
             this.orientationPortrait.CheckedChanged += new System.EventHandler(this.orientationPortrait_CheckedChanged);
             // 
-            // orientationDefault
+            // orientationAutomatic
             // 
-            resources.ApplyResources(this.orientationDefault, "orientationDefault");
-            this.orientationDefault.Name = "orientationDefault";
-            this.orientationDefault.TabStop = true;
-            this.orientationDefault.Tag = "-1";
-            this.orientationDefault.UseVisualStyleBackColor = true;
-            this.orientationDefault.CheckedChanged += new System.EventHandler(this.orientationDefault_CheckedChanged);
+            resources.ApplyResources(this.orientationAutomatic, "orientationAutomatic");
+            this.orientationAutomatic.Name = "orientationAutomatic";
+            this.orientationAutomatic.TabStop = true;
+            this.orientationAutomatic.Tag = "-1";
+            this.orientationAutomatic.UseVisualStyleBackColor = true;
+            this.orientationAutomatic.CheckedChanged += new System.EventHandler(this.orientationDefault_CheckedChanged);
             // 
             // paperSizeCombo
             // 
@@ -356,7 +356,7 @@
         private System.Windows.Forms.ComboBox paperSizeCombo;
         private System.Windows.Forms.RadioButton orientationLandscape;
         private System.Windows.Forms.RadioButton orientationPortrait;
-        private System.Windows.Forms.RadioButton orientationDefault;
+        private System.Windows.Forms.RadioButton orientationAutomatic;
         private System.Windows.Forms.CheckBox rawModeCheckbox;
         private System.Windows.Forms.TabPage tabPage3;
         private System.Windows.Forms.Label label8;
