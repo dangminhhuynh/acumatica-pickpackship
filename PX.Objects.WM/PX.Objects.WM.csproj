@@ -67,7 +67,13 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>PowerShell -File "$(SolutionDir)\UpdateCustomizationPackage.ps1" -SolutionDir $(SolutionDir) -ConfigurationName $(ConfigurationName) -TargetDir $(TargetDir)</PostBuildEvent>
+    <PostBuildEvent>SET ACUMATICAROOT="C:\Program Files (x86)\Acumatica ERP\AcumaticaDemo60"
+xcopy %25ACUMATICAROOT%25\Pages\SM\SM206500* "$(SolutionDir)\Customization\Pages\SM\" /y
+xcopy %25ACUMATICAROOT%25\Pages\SM\SM206510* "$(SolutionDir)\Customization\Pages\SM\" /y
+xcopy %25ACUMATICAROOT%25\Pages\SM\SM206530* "$(SolutionDir)\Customization\Pages\SM\" /y
+xcopy %25ACUMATICAROOT%25\Pages\SO\SO302010* "$(SolutionDir)\Customization\Pages\SO\" /y
+copy "$(TargetDir)\$(TargetFileName)" "$(SolutionDir)\Customization\Bin\PX.Objects.WM.dll" /y
+if $(ConfigurationName)==Release $(SolutionDir)\CstBuildProject.exe /website %25ACUMATICAROOT%25 /in "$(SolutionDir)\Customization" /out "$(SolutionDir)\Release\PickPackShip.zip"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
