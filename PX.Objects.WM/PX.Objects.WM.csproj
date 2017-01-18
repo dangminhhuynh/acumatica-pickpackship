@@ -54,6 +54,7 @@
     <Compile Include="DAC\SMPrintJob.cs" />
     <Compile Include="DAC\SMPrintJobParameter.cs" />
     <Compile Include="DAC\SMScale.cs" />
+    <Compile Include="DAC\SOPackageDetailSplit.cs" />
     <Compile Include="DAC\SOPickPackShipUserSetup.cs" />
     <Compile Include="DAC\SOShipLinePick.cs" />
     <Compile Include="Descriptor\Messages.cs" />

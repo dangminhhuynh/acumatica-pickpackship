@@ -35,6 +35,10 @@ namespace PX.Objects.SO
     
     public class SOShipmentEntryExt : PXGraphExtension<SOShipmentEntry>
     {
+        public PXSelect<SOPackageDetailSplit,
+               Where<SOPackageDetailSplit.shipmentNbr, Equal<Current<SOPackageDetail.shipmentNbr>>,
+               And<SOPackageDetailSplit.lineNbr, Equal<Current<SOPackageDetail.lineNbr>>>>> PackageDetailSplit;
+
         public PXAction<SOShipment> action;
         [PXUIField(DisplayName = "Actions", MapEnableRights = PXCacheRights.Select, MapViewRights = PXCacheRights.Select)]
         [PXButton]
