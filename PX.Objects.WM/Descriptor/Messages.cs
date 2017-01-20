@@ -52,7 +52,7 @@ namespace PX.Objects.WM
         public const string InventoryAddedWithBarcode = "Added {0} x {1} ({2}).";
         public const string InventoryRemoved = "Removed {0} x {1}.";
         public const string InventoryRemovedWithBarcode = "Removed {0} x {1} ({2}).";
-        public const string InventoryMissing = "Item {0} not found on shipment.";
+        public const string InventoryMissing = "Item {0} not found on shipment or in current package.";
         #endregion
 
         #region Package
@@ -62,6 +62,7 @@ namespace PX.Objects.WM
         public const string PackageIncompleteError = "Please complete the current package using the {0}{1} command.";
         public const string PackageInvalidFileExtension = "Unsupported file extension attached to the package for Shipment {0}/{1}";
         public const string PackageInvalidWeight = "{0} is not a valid weight.";
+        public const string PackageRemoveInventoryError = "The system was not able to locate package details for the item you just removed.";
         public const string PackageLineNbrMissing = "Unable to find package line {0} - was it deleted manually?";
         public const string PackageMissingCurrent = "There is no package currently selected or in process.";
         public const string PackageWeightPrompt = "Please enter the total weight of this package and press enter.";

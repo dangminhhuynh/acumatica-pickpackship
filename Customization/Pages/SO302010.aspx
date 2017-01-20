@@ -127,21 +127,49 @@
             </px:PXTabItem>
             <px:PXTabItem Text="Packages">
                 <Template>
-                    <px:PXGrid ID="gridPackages" runat="server" DataSourceID="ds" Style="z-index: 100; left: 0px; top: 0px; height: 372px;" Width="100%" SkinID="Details" BorderWidth="0px">
-                        <Levels>
-                            <px:PXGridLevel DataMember="Packages">
-                                <Columns>
-                                    <px:PXGridColumn DataField="BoxID" DisplayFormat="&gt;aaaaaaaaaaaaaaa" Label="Box ID" Width="117px" />
-                                    <px:PXGridColumn AutoGenerateOption="NotSet" DataField="Description" MaxLength="30" Width="200px" />
-									<px:PXGridColumn AllowNull="False" DataField="Weight" TextAlign="Right" Width="91px" />
-                                    <px:PXGridColumn AllowNull="False" DataField="WeightUOM" Width="91px" />
-                                    <px:PXGridColumn AllowNull="False" DataField="DeclaredValue" TextAlign="Right" Width="91px" />
-                                    <px:PXGridColumn AllowNull="False" DataField="COD" Label="C.O.D. Amount" TextAlign="Right" Width="91px" />
-                                </Columns>
-                            </px:PXGridLevel>
-                        </Levels>
-                        <AutoSize Enabled="True" MinHeight="150" />
-                    </px:PXGrid>
+                    <px:PXSplitContainer runat="server" SplitterPosition="200" SavePosition="True" ID="sp1" Height="500px" SkinID="Horizontal">
+                        <AutoSize Enabled="True" />
+				        <Template1>
+							<px:PXGrid ID="gridPackages" runat="server" DataSourceID="ds" Style="z-index: 100; left: 0px; top: 0px; height: 372px;" Width="100%" SkinID="Details" BorderWidth="0px" SyncPosition="True">
+								<Levels>
+									<px:PXGridLevel DataMember="Packages">
+										<Columns>
+											<px:PXGridColumn DataField="IsCurrent" TextAlign="Center" Type="CheckBox" CommitChanges="True" />
+											<px:PXGridColumn DataField="BoxID" DisplayFormat="&gt;aaaaaaaaaaaaaaa" Label="Box ID" Width="117px" />
+											<px:PXGridColumn AutoGenerateOption="NotSet" DataField="Description" MaxLength="30" Width="200px" />
+											<px:PXGridColumn AllowNull="False" DataField="Weight" TextAlign="Right" Width="91px" />
+											<px:PXGridColumn AllowNull="False" DataField="WeightUOM" Width="91px" />
+											<px:PXGridColumn AllowNull="False" DataField="DeclaredValue" TextAlign="Right" Width="91px" />
+											<px:PXGridColumn AllowNull="False" DataField="COD" Label="C.O.D. Amount" TextAlign="Right" Width="91px" />
+										</Columns>
+									</px:PXGridLevel>
+								</Levels>
+								<AutoCallBack Target="gridPackageDetailSplit" Command="Refresh" />
+								<AutoSize Enabled="True" MinHeight="150" />
+							</px:PXGrid>
+						</Template1>
+				        <Template2>
+			                <px:PXGrid ID="gridPackageDetailSplit" runat="server" DataSourceID="ds" Style="z-index: 100; left: 0px; top: 0px; height: 372px;" Width="100%" SkinID="DetailsInTab" BorderWidth="0px" Caption="Contents of Current Package">
+				                <Levels>
+			                        <px:PXGridLevel DataMember="PackageSplits">
+					                    <Columns>
+				                            <px:PXGridColumn DataField="InventoryID" Width="200px" />
+			                                <px:PXGridColumn DataField="SubItemID" Width="120" />
+				                            <px:PXGridColumn DataField="Qty" Width="100" />
+				                            <px:PXGridColumn DataField="QtyUOM" Width="70" />
+			                                <px:PXGridColumn DataField="LotSerialNbr" Width="200" />
+			                                <px:PXGridColumn DataField="ExpireDate" Width="90" />
+						                </Columns>
+						            </px:PXGridLevel>
+						        </Levels>                
+						        <AutoSize Enabled="True" />
+						        <Mode InitNewRow="True" />
+				                <Parameters>
+				                    <px:PXSyncGridParam ControlID="gridPackages" />
+						        </Parameters>
+						    </px:PXGrid>
+					    </Template2>
+					</px:PXSplitContainer>
                 </Template>
             </px:PXTabItem>
         </Items>

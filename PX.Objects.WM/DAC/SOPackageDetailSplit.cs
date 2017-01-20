@@ -11,16 +11,15 @@ namespace PX.SM
         public abstract class shipmentNbr : IBqlField { }
 
         [PXDBString(15, IsKey = true, IsUnicode = true)]
-        [PXDBDefault(typeof(SOPackageDetail.shipmentNbr))]
-        [PXParent(typeof(Select<SOPackageDetail,
-                         Where<SOPackageDetail.shipmentNbr, Equal<Current<shipmentNbr>>,
-                         And<SOPackageDetail.lineNbr, Equal<Current<lineNbr>>>>>))]
+        [PXDBDefault(typeof(SOShipment.shipmentNbr))]
+        [PXParent(typeof(Select<SOShipment,
+                         Where<SOPackageDetail.shipmentNbr, Equal<Current<shipmentNbr>>>>))]
         public virtual String ShipmentNbr { get; set; }
         
         public abstract class lineNbr : IBqlField { }
 
         [PXDBInt(IsKey = true)]
-        [PXDefault(typeof(SOPackageDetail.lineNbr))]
+        [PXDBDefault(typeof(SOPackageDetail.lineNbr))]
         public virtual Int32? LineNbr { get; set; }
 
         public abstract class splitLineNbr : IBqlField { }
