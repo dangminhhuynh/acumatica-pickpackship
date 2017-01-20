@@ -135,7 +135,7 @@ namespace PX.Objects.SO
             Splits.Cache.AllowDelete = false;
             Splits.Cache.AllowInsert = false;
             Splits.Cache.AllowUpdate = false;
-            Packages.Cache.AllowInsert = this.Document.Current != null && this.Document.Current.ShipmentNbr != null;
+            Packages.Cache.AllowInsert = this.Shipment.Current != null;
 
             var doc = this.Document.Current;
             Confirm.SetEnabled(doc != null && doc.ShipmentNbr != null);
@@ -168,6 +168,7 @@ namespace PX.Objects.SO
                 doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.ShipmentNbrMissing, doc.ShipmentNbr);
             }
 
+            ClearScreen(false);
             this.Document.Update(doc);
         }
 
@@ -191,7 +192,7 @@ namespace PX.Objects.SO
             //We only use this view as a container for picked packages. We don't care about what's in the DB for this shipment.
             foreach (SOPackageDetailPick row in Packages.Cache.Cached)
             {
-                if (this.Shipment.Current != null && row.ShipmentNbr == this.Shipment.Current.ShipmentNbr)
+                if (this.Shipment.Current != null && row.ShipmentNbr == this.Shipment.Current.ShipmentNbr && Packages.Cache.GetStatus(row) == PXEntryStatus.Inserted)
                 {
                     yield return row;
                 }
@@ -327,7 +328,7 @@ namespace PX.Objects.SO
                         }
                         break;
                     case ScanCommands.Clear:
-                        ClearScreen();
+                        ClearScreen(true);
                         doc.Status = ScanStatuses.Success;
                         doc.Message = WM.Messages.CommandClear;
                         break;
@@ -369,15 +370,17 @@ namespace PX.Objects.SO
             }
         }
 
-        protected virtual void ClearScreen()
+        protected virtual void ClearScreen(bool clearShipmentNbr)
         {
-            this.Document.Current.ShipmentNbr = null;
+            if(clearShipmentNbr) this.Document.Current.ShipmentNbr = null;
             this.Document.Current.CurrentInventoryID = null;
             this.Document.Current.CurrentSubID = null;
             this.Document.Current.CurrentLocationID = null;
             this.Document.Current.CurrentPackageLineNbr = null;
             this.Transactions.Cache.Clear();
             this.Splits.Cache.Clear();
+            this.Packages.Cache.Clear();
+            this.PackageSplits.Cache.Clear();
         }
 
         protected virtual void ProcessBarcode(string barcode)
@@ -394,6 +397,13 @@ namespace PX.Objects.SO
                 }
             }
 
+            if (IsCurrentPackageRequiredAndMissing())
+            {
+                doc.Status = ScanStatuses.Error;
+                doc.Message = PXMessages.LocalizeFormatNoPrefix(WM.Messages.PackageMissingCurrent);
+                return;
+            }
+
             if (doc.CurrentInventoryID == null)
             {
                 ProcessItemBarcode(barcode);
@@ -402,6 +412,13 @@ namespace PX.Objects.SO
             {
                 ProcessLotSerialBarcode(barcode);
             }
+        }
+
+        protected virtual bool IsCurrentPackageRequiredAndMissing()
+        {
+            // We don't force users to use them but as soon as they have added one, they have to continue for all their scans.
+            // Maybe in the future we can add a setting in SO to control whether this is required or not instead.
+            return Packages.SelectSingle() != null && this.Document.Current.CurrentPackageLineNbr == null;
         }
 
         protected virtual void ProcessItemBarcode(string barcode)
@@ -669,11 +686,6 @@ namespace PX.Objects.SO
 
         protected virtual bool AddPick(int? inventoryID, int? subID, decimal? quantity, string lotSerialNumber)
         {
-            if (Packages.Select().Count > 0 && Packages.Search<SOPackageDetailPick.isCurrent>(true).Count == 0)
-            {
-                throw new PXException(PXMessages.LocalizeFormatNoPrefix(WM.Messages.PackageMissingCurrent));
-            }
-
             SOShipLinePick firstLine = null;
             foreach (SOShipLinePick pickLine in this.Transactions.Select())
             {
@@ -1032,7 +1044,7 @@ namespace PX.Objects.SO
                             System.Diagnostics.Debug.Assert(false, "ConfirmMode invalid");
                         }
 
-                        ClearScreen();
+                        ClearScreen(true);
                         this.Document.Update(doc);
                     }
                     catch (Exception e)
