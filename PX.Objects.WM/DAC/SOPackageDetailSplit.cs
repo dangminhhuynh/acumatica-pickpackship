@@ -68,7 +68,7 @@ namespace PX.SM
         public abstract class expireDate : IBqlField { }
 
         [PXDBDate]
-        [PXUIField(DisplayName = "Expire Date")]
+        [PXUIField(DisplayName = "Expire Date", Visibility = PXUIVisibility.Invisible, Visible = false)]
         public virtual DateTime? ExpireDate { get; set; }
     }
 }
