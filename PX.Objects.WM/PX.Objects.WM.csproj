@@ -74,7 +74,9 @@ xcopy %25ACUMATICAROOT%25\Pages\SM\SM206500* "$(SolutionDir)\Customization\Pages
 xcopy %25ACUMATICAROOT%25\Pages\SM\SM206510* "$(SolutionDir)\Customization\Pages\SM\" /y
 xcopy %25ACUMATICAROOT%25\Pages\SM\SM206530* "$(SolutionDir)\Customization\Pages\SM\" /y
 xcopy %25ACUMATICAROOT%25\Pages\SO\SO302010* "$(SolutionDir)\Customization\Pages\SO\" /y
+if not exist "$(SolutionDir)\Customization\Bin\" mkdir "$(SolutionDir)\Customization\Bin\"
 copy "$(TargetDir)\$(TargetFileName)" "$(SolutionDir)\Customization\Bin\PX.Objects.WM.dll" /y
+if not exist "$(SolutionDir)\Release\" mkdir "$(SolutionDir)\Release\"
 if $(ConfigurationName)==Release $(SolutionDir)\CstBuildProject.exe /website %25ACUMATICAROOT%25 /in "$(SolutionDir)\Customization" /out "$(SolutionDir)\Release\PickPackShip.zip"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
