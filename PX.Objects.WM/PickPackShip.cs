@@ -12,8 +12,9 @@ namespace PX.Objects.SO
     public static class ScanStatuses
     {
         public const string Success = "OK"; //Causes focus to be sent back to shipment nbr. field
-        public const string Information = "INF";
+        public const string Clear = "CLR"; //Causes focus to be sent back to shipment nbr. field (same sound as "Scan" status)
         public const string Scan = "SCN";
+        public const string Information = "INF";
         public const string Error = "ERR";
     }
     
@@ -329,7 +330,7 @@ namespace PX.Objects.SO
                         break;
                     case ScanCommands.Clear:
                         ClearScreen(true);
-                        doc.Status = ScanStatuses.Success;
+                        doc.Status = ScanStatuses.Clear;
                         doc.Message = WM.Messages.CommandClear;
                         break;
                     case ScanCommands.NewPackage:

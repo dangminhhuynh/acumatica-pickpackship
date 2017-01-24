@@ -19,8 +19,8 @@ public partial class Page_SO302010 : PX.Web.UI.PXPage
 
     protected void Page_Load(object sender, EventArgs e)
     {
-        RegisterStyle("CssComplete", null, "Olive", true);
-        RegisterStyle("CssPartial", null, "Olive", false);
+        RegisterStyle("CssComplete", null, "Green", true);
+        RegisterStyle("CssPartial", null, "Black", true);
         RegisterStyle("CssOverpick", null, "OrangeRed", true);
     }
 

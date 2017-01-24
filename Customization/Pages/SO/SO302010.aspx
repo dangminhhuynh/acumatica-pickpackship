@@ -16,9 +16,20 @@
 	                audio.play();
 	                px_alls["edShipmentNbr"].focus();
 	            }
+	            else if(edStatus.getValue() == "CLR")
+	            {
+	                var audio = new Audio(baseUrl + 'Sounds/balloon.wav');
+	                audio.play();
+	                px_alls["edShipmentNbr"].focus();
+	            }
 	            else if (edStatus.getValue() == "SCN")
 	            {
 	                var audio = new Audio(baseUrl + 'Sounds/balloon.wav');
+	                audio.play();
+	            }
+	            else if (edStatus.getValue() == "INF")
+	            {
+	                var audio = new Audio(baseUrl + 'Sounds/balloon2.wav');
 	                audio.play();
 	            }
 	            else if(edStatus.getValue() == "ERR")
