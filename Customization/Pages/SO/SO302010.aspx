@@ -4,53 +4,45 @@
 <%@ MasterType VirtualPath="~/MasterPages/FormDetail.master" %>
 <asp:content id="cont1" contentplaceholderid="phDS" runat="Server">
 	<script language="javascript" type="text/javascript">
-	    function CommandResult(ds, context) {
+	    function Barcode_KeyDown(ctrl, e) {
+	        if (e.keyCode === 13) { //Enter key 
+	            var ds = px_alls["ds"];
+	            ds.executeCallback("scan");
+	        }
+	    }
+
+	    function ActionCallback(callbackContext) {
 	        var baseUrl = (location.href.indexOf("HideScript") > 0) ? "../../" : "../../../";
 	        var edStatus = px_alls["edStatus"];
 
-	        if ((context.command == "confirm" || context.command == "confirmAll" || context.command == "scan") && edStatus != null)
-	        {
-	            if (edStatus.getValue() == "OK")
-                {
+	        if ((callbackContext.info.name == "confirm" || callbackContext.info.name == "confirmAll" || callbackContext.info.name == "scan") && edStatus != null) {
+	            if (edStatus.getValue() == "OK") {
 	                var audio = new Audio(baseUrl + 'Sounds/success.wav');
 	                audio.play();
 	                px_alls["edShipmentNbr"].focus();
 	            }
-	            else if(edStatus.getValue() == "CLR")
-	            {
+	            else if (edStatus.getValue() == "CLR") {
 	                var audio = new Audio(baseUrl + 'Sounds/balloon.wav');
 	                audio.play();
 	                px_alls["edShipmentNbr"].focus();
 	            }
-	            else if (edStatus.getValue() == "SCN")
-	            {
+	            else if (edStatus.getValue() == "SCN" || edStatus.getValue() == "INF") {
 	                var audio = new Audio(baseUrl + 'Sounds/balloon.wav');
 	                audio.play();
+	                px_alls["edBarcode"].focus();
 	            }
-	            else if (edStatus.getValue() == "INF")
-	            {
-	                var audio = new Audio(baseUrl + 'Sounds/balloon2.wav');
-	                audio.play();
-	            }
-	            else if(edStatus.getValue() == "ERR")
-	            {
+	            else if (edStatus.getValue() == "ERR") {
 	                var audio = new Audio(baseUrl + 'Sounds/asterisk.wav');
 	                audio.play();
+	                px_alls["edBarcode"].focus();
 	            }
 	        }
-	    }
+	    };
 
-	    function Barcode_KeyDown(ctrl, e) {
-	        if (e.keyCode === 13) { //Enter key
-	            var ds = px_alls["ds"];
-	            ds.executeCallback("scan");
-	            e.cancel = true;
-	        }
-	    }
+	    window.addEventListener('load', function () { px_callback.addHandler(ActionCallback); });
 	</script>
 
 	<px:PXDataSource ID="ds" runat="server" Visible="True" Width="100%" TypeName="PX.Objects.SO.PickPackShip" PrimaryView="Document">
-        <ClientEvents CommandPerformed="CommandResult"/>
 		<CallbackCommands>
 			<px:PXDSCallbackCommand Name="Confirm" Visible="True" CommitChanges="True" />
 			<px:PXDSCallbackCommand Name="ConfirmAll" Visible="True" CommitChanges="True" />
